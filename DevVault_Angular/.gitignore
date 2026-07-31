@@ -52,6 +52,7 @@ node_modules/
 .env.development.local
 .env.production.local
 .env.test.local
+environment.env
 
 # Logs
 logs
