@@ -15,9 +15,47 @@ export const routes: Routes = [
     canActivate: [guestGuard],
   },
   {
-    path: 'dashboard',
-    loadComponent: () => import('./features/dashboard/dashboard').then((m) => m.Dashboard),
+    path: '',
+    loadComponent: () => import('./layout/layout').then((m) => m.Layout),
     canActivate: [authGuard],
+    children: [
+      { path: '', pathMatch: 'full', redirectTo: 'dashboard' },
+      {
+        path: 'dashboard',
+        loadComponent: () => import('./features/dashboard/dashboard').then((m) => m.Dashboard),
+        data: { title: 'Dashboard' },
+      },
+      {
+        path: 'bookmarks',
+        loadComponent: () => import('./shared/components/coming-soon/coming-soon').then((m) => m.ComingSoon),
+        data: { title: 'Bookmarks', icon: 'bookmark' },
+      },
+      {
+        path: 'folders',
+        loadComponent: () => import('./shared/components/coming-soon/coming-soon').then((m) => m.ComingSoon),
+        data: { title: 'Folders', icon: 'folder' },
+      },
+      {
+        path: 'tags',
+        loadComponent: () => import('./shared/components/coming-soon/coming-soon').then((m) => m.ComingSoon),
+        data: { title: 'Tags', icon: 'label' },
+      },
+      {
+        path: 'notes',
+        loadComponent: () => import('./shared/components/coming-soon/coming-soon').then((m) => m.ComingSoon),
+        data: { title: 'Notes', icon: 'description' },
+      },
+      {
+        path: 'snippets',
+        loadComponent: () => import('./shared/components/coming-soon/coming-soon').then((m) => m.ComingSoon),
+        data: { title: 'Snippets', icon: 'code' },
+      },
+      {
+        path: 'settings',
+        loadComponent: () => import('./shared/components/coming-soon/coming-soon').then((m) => m.ComingSoon),
+        data: { title: 'Settings', icon: 'settings' },
+      },
+    ],
   },
   { path: '**', redirectTo: 'auth/login' },
 ];

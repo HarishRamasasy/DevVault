@@ -1,0 +1,58 @@
+<header class="sticky top-0 z-10 flex h-16 shrink-0 items-center gap-3 border-b border-gray-200 bg-white px-4 sm:px-6">
+  <button
+    type="button"
+    (click)="menuToggle.emit()"
+    class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-gray-500 transition hover:bg-gray-100 hover:text-gray-700"
+    aria-label="Toggle navigation"
+  >
+    <mat-icon>menu</mat-icon>
+  </button>
+
+  <div class="relative max-w-md flex-1">
+    <mat-icon class="pointer-events-none absolute left-3 top-1/2 !text-[18px] -translate-y-1/2 text-gray-400">
+      search
+    </mat-icon>
+    <input
+      type="text"
+      placeholder="Search bookmarks, notes, snippets..."
+      class="w-full rounded-lg border border-gray-200 bg-gray-50 py-2 pl-9 pr-3 text-sm text-gray-700 placeholder:text-gray-400 focus:border-blue-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+    />
+  </div>
+
+  <div class="ml-auto flex items-center gap-1.5">
+    <button
+      type="button"
+      class="flex h-9 w-9 items-center justify-center rounded-lg text-gray-500 transition hover:bg-gray-100 hover:text-gray-700"
+      aria-label="Notifications"
+    >
+      <mat-icon>notifications</mat-icon>
+    </button>
+
+    <button
+      type="button"
+      [matMenuTriggerFor]="userMenu"
+      class="flex items-center gap-2 rounded-lg py-1.5 pl-1.5 pr-2 transition hover:bg-gray-100"
+    >
+      <span class="flex h-8 w-8 items-center justify-center rounded-full bg-blue-600 text-sm font-semibold text-white">
+        {{ initials() || '?' }}
+      </span>
+      <span class="hidden text-sm font-medium text-gray-700 sm:inline">{{ currentUser()?.name }}</span>
+      <mat-icon class="hidden !text-[18px] text-gray-400 sm:inline">expand_more</mat-icon>
+    </button>
+
+    <mat-menu #userMenu="matMenu">
+      <button mat-menu-item>
+        <mat-icon>person</mat-icon>
+        <span>Profile</span>
+      </button>
+      <button mat-menu-item routerLink="/settings">
+        <mat-icon>settings</mat-icon>
+        <span>Settings</span>
+      </button>
+      <button mat-menu-item (click)="logout()">
+        <mat-icon>logout</mat-icon>
+        <span>Logout</span>
+      </button>
+    </mat-menu>
+  </div>
+</header>
