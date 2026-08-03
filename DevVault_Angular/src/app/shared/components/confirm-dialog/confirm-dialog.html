@@ -1,0 +1,24 @@
+<h2 mat-dialog-title class="!m-0 text-lg font-semibold text-gray-900">{{ data.title }}</h2>
+<mat-dialog-content class="!mt-2 w-full text-sm text-gray-600 sm:w-[380px]">
+  {{ data.message }}
+</mat-dialog-content>
+<mat-dialog-actions class="!mt-4 !px-0 !pb-0 flex justify-end gap-2">
+  <button
+    type="button"
+    (click)="cancel()"
+    class="rounded-lg px-4 py-2 text-sm font-medium text-gray-600 transition hover:bg-gray-100"
+  >
+    {{ data.cancelLabel ?? 'Cancel' }}
+  </button>
+  <button
+    type="button"
+    (click)="confirm()"
+    [class]="
+      data.danger
+        ? 'rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-700'
+        : 'rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700'
+    "
+  >
+    {{ data.confirmLabel ?? 'Confirm' }}
+  </button>
+</mat-dialog-actions>

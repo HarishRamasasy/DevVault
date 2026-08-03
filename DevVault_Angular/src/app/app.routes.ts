@@ -27,8 +27,8 @@ export const routes: Routes = [
       },
       {
         path: 'bookmarks',
-        loadComponent: () => import('./shared/components/coming-soon/coming-soon').then((m) => m.ComingSoon),
-        data: { title: 'Bookmarks', icon: 'bookmark' },
+        loadComponent: () => import('./features/bookmarks/bookmarks').then((m) => m.Bookmarks),
+        data: { title: 'Bookmarks' },
       },
       {
         path: 'folders',

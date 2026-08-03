@@ -1,0 +1,98 @@
+<h2 mat-dialog-title class="!m-0 text-lg font-semibold text-gray-900">
+  {{ isEditMode ? 'Edit Bookmark' : 'New Bookmark' }}
+</h2>
+
+<form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+  <mat-dialog-content class="!mt-2 w-full sm:w-[440px]">
+    <div class="space-y-4 pt-1">
+      <div>
+        <label for="title" class="block text-sm font-medium text-gray-700">Title</label>
+        <input
+          id="title"
+          type="text"
+          formControlName="title"
+          placeholder="e.g. Angular Signals Guide"
+          class="mt-1.5 block w-full rounded-lg border border-gray-300 px-3.5 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/30"
+        />
+        @if (form.controls.title.hasError('required') && form.controls.title.touched) {
+          <p class="mt-1 text-xs text-red-600">Title is required</p>
+        }
+        @if (form.controls.title.hasError('maxlength') && form.controls.title.touched) {
+          <p class="mt-1 text-xs text-red-600">Title cannot exceed 150 characters</p>
+        }
+      </div>
+
+      <div>
+        <label for="url" class="block text-sm font-medium text-gray-700">URL</label>
+        <input
+          id="url"
+          type="url"
+          formControlName="url"
+          placeholder="https://example.com"
+          class="mt-1.5 block w-full rounded-lg border border-gray-300 px-3.5 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/30"
+        />
+        @if (form.controls.url.hasError('required') && form.controls.url.touched) {
+          <p class="mt-1 text-xs text-red-600">URL is required</p>
+        }
+        @if (form.controls.url.hasError('pattern') && form.controls.url.touched) {
+          <p class="mt-1 text-xs text-red-600">Enter a valid URL including http:// or https://</p>
+        }
+      </div>
+
+      <div>
+        <label for="description" class="block text-sm font-medium text-gray-700">Description</label>
+        <textarea
+          id="description"
+          formControlName="description"
+          rows="3"
+          placeholder="Optional notes about this resource"
+          class="mt-1.5 block w-full resize-none rounded-lg border border-gray-300 px-3.5 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/30"
+        ></textarea>
+        @if (form.controls.description.hasError('maxlength') && form.controls.description.touched) {
+          <p class="mt-1 text-xs text-red-600">Description cannot exceed 500 characters</p>
+        }
+      </div>
+
+      <div>
+        <label for="type" class="block text-sm font-medium text-gray-700">Type</label>
+        <select
+          id="type"
+          formControlName="type"
+          class="mt-1.5 block w-full rounded-lg border border-gray-300 bg-white px-3.5 py-2.5 text-sm text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/30"
+        >
+          @for (option of bookmarkTypes; track option.value) {
+            <option [value]="option.value">{{ option.label }}</option>
+          }
+        </select>
+      </div>
+
+      <div>
+        <label for="tags" class="block text-sm font-medium text-gray-700">Tags</label>
+        <input
+          id="tags"
+          type="text"
+          formControlName="tags"
+          placeholder="angular, signals, guide"
+          class="mt-1.5 block w-full rounded-lg border border-gray-300 px-3.5 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/30"
+        />
+        <p class="mt-1 text-xs text-gray-400">Separate tags with commas</p>
+      </div>
+    </div>
+  </mat-dialog-content>
+
+  <mat-dialog-actions class="mr-4 flex justify-end gap-2">
+    <button
+      type="button"
+      (click)="cancel()"
+      class="rounded-lg px-4 py-2 text-sm font-medium text-gray-600 transition hover:bg-gray-100"
+    >
+      Cancel
+    </button>
+    <button
+      type="submit"
+      class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700"
+    >
+      {{ isEditMode ? 'Save Changes' : 'Create Bookmark' }}
+    </button>
+  </mat-dialog-actions>
+</form>
