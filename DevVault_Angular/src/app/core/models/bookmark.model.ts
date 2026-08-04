@@ -22,6 +22,7 @@ export interface BookmarkPayload {
   type?: BookmarkType;
   tags?: string[];
   folder?: string | null;
+  favorite?: boolean;
 }
 
 export interface BookmarkQueryParams {

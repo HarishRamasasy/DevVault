@@ -7,3 +7,19 @@ body {
   height: 100%;
 }
 
+.app-snackbar {
+  --mdc-snackbar-container-color: #1f2937;
+  --mdc-snackbar-supporting-text-color: #ffffff;
+  --mat-snack-bar-button-color: #93c5fd;
+}
+
+.app-snackbar--success {
+  --mdc-snackbar-container-color: #16a34a;
+  --mat-snack-bar-button-color: #ffffff;
+}
+
+.app-snackbar--error {
+  --mdc-snackbar-container-color: #dc2626;
+  --mat-snack-bar-button-color: #ffffff;
+}
+

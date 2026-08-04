@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
+import { DatePipe } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { Bookmark, BOOKMARK_TYPES } from '../../../../core/models/bookmark.model';
@@ -6,7 +7,7 @@ import { Bookmark, BOOKMARK_TYPES } from '../../../../core/models/bookmark.model
 @Component({
   selector: 'app-bookmark-card',
   standalone: true,
-  imports: [MatIconModule, MatMenuModule],
+  imports: [MatIconModule, MatMenuModule, DatePipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './bookmark-card.html',
   styleUrl: './bookmark-card.css',

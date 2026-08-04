@@ -61,13 +61,20 @@
     </div>
   }
 
-  <a
-    [href]="bookmark.url"
-    target="_blank"
-    rel="noopener noreferrer"
-    class="mt-4 flex items-center gap-1 text-sm font-medium text-blue-600 hover:text-blue-700"
-  >
-    Open
-    <mat-icon class="!text-[16px]">open_in_new</mat-icon>
-  </a>
+  <div class="mt-4 flex items-center justify-between gap-2">
+    <span class="flex items-center gap-1 text-xs text-gray-400">
+      <mat-icon class="!text-[14px]">schedule</mat-icon>
+      {{ bookmark.createdAt | date: 'MMM d, y' }}
+    </span>
+
+    <a
+      [href]="bookmark.url"
+      target="_blank"
+      rel="noopener noreferrer"
+      class="flex items-center gap-1 text-sm font-medium text-blue-600 hover:text-blue-700"
+    >
+      Open
+      <mat-icon class="!text-[16px]">open_in_new</mat-icon>
+    </a>
+  </div>
 </div>

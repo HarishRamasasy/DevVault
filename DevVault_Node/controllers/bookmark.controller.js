@@ -12,8 +12,10 @@ export const createBookmark = async (req, res, next) => {
 
 export const listBookmarks = async (req, res, next) => {
   try {
-    const bookmarks = await bookmarkService.listBookmarks(req.user.id, req.query);
-    res.status(200).json(new ApiResponse('Bookmarks fetched successfully', { bookmarks, count: bookmarks.length }));
+    const { bookmarks, pagination } = await bookmarkService.listBookmarks(req.user.id, req.query);
+    res
+      .status(200)
+      .json(new ApiResponse('Bookmarks fetched successfully', { bookmarks, count: bookmarks.length, pagination }));
   } catch (error) {
     next(error);
   }

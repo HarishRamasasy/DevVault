@@ -78,4 +78,6 @@ export const listBookmarksValidator = [
   query('tag').optional().trim(),
   query('sortBy').optional().isIn(['createdAt', 'title', 'updatedAt']).withMessage('Invalid sort field'),
   query('sortOrder').optional().isIn(['asc', 'desc']).withMessage('Sort order must be asc or desc'),
+  query('page').optional().isInt({ min: 1 }).withMessage('Page must be a positive integer'),
+  query('limit').optional().isInt({ min: 1, max: 100 }).withMessage('Limit must be between 1 and 100'),
 ];

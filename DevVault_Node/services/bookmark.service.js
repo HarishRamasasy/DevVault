@@ -27,7 +27,7 @@ export const createBookmark = async (userId, payload) => {
 };
 
 export const listBookmarks = async (userId, filters) => {
-  const { search, favorite, archived, type, tag, sortBy = 'createdAt', sortOrder = 'desc' } = filters;
+  const { search, favorite, archived, type, tag, sortBy = 'createdAt', sortOrder = 'desc', page, limit } = filters;
 
   const query = { user: userId };
 
@@ -52,8 +52,30 @@ export const listBookmarks = async (userId, filters) => {
 
   const sort = { [sortBy]: sortOrder === 'asc' ? 1 : -1 };
 
-  const bookmarks = await Bookmark.find(query).sort(sort);
-  return bookmarks.map((bookmark) => bookmark.toJSON());
+  const total = await Bookmark.countDocuments(query);
+
+  const pageNumber = page !== undefined ? Number(page) : undefined;
+  const pageSize = limit !== undefined ? Number(limit) : undefined;
+  const isPaginated = pageNumber !== undefined || pageSize !== undefined;
+
+  let cursor = Bookmark.find(query).sort(sort);
+
+  let pagination = { page: 1, limit: total, total, totalPages: total > 0 ? 1 : 0 };
+
+  if (isPaginated) {
+    const resolvedPage = pageNumber ?? 1;
+    const resolvedLimit = pageSize ?? 20;
+    cursor = cursor.skip((resolvedPage - 1) * resolvedLimit).limit(resolvedLimit);
+    pagination = {
+      page: resolvedPage,
+      limit: resolvedLimit,
+      total,
+      totalPages: Math.max(Math.ceil(total / resolvedLimit), 1),
+    };
+  }
+
+  const bookmarks = await cursor;
+  return { bookmarks: bookmarks.map((bookmark) => bookmark.toJSON()), pagination };
 };
 
 export const getBookmarkById = async (id, userId) => {
