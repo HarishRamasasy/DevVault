@@ -1,0 +1,18 @@
+@if (crumbs().length) {
+  <nav
+    class="flex items-center gap-1.5 border-b border-gray-100 bg-white px-4 py-3 text-sm text-gray-500 sm:px-6"
+    aria-label="Breadcrumb"
+  >
+    <a routerLink="/dashboard" class="flex items-center text-gray-400 transition hover:text-gray-600">
+      <mat-icon class="!text-[18px]">home</mat-icon>
+    </a>
+    @for (crumb of crumbs(); track crumb.url; let last = $last) {
+      <mat-icon class="!text-[16px] text-gray-300">chevron_right</mat-icon>
+      @if (last) {
+        <span class="font-medium text-gray-900">{{ crumb.label }}</span>
+      } @else {
+        <a [routerLink]="crumb.url" class="transition hover:text-gray-700">{{ crumb.label }}</a>
+      }
+    }
+  </nav>
+}

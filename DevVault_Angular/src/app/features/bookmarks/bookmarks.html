@@ -1,0 +1,102 @@
+<div class="space-y-6">
+  <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-900">Bookmarks</h1>
+      <p class="mt-1 text-sm text-gray-500">Save and organize the links you rely on.</p>
+    </div>
+    <button
+      type="button"
+      (click)="openCreateDialog()"
+      class="flex items-center justify-center gap-1.5 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700"
+    >
+      <mat-icon class="!text-[18px]">add</mat-icon>
+      New Bookmark
+    </button>
+  </div>
+
+  <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+    <div class="relative w-full sm:max-w-xs">
+      <mat-icon class="pointer-events-none absolute left-3 top-1/2 !text-[18px] -translate-y-1/2 text-gray-400">
+        search
+      </mat-icon>
+      <input
+        #searchInput
+        type="text"
+        [value]="searchTerm()"
+        (input)="searchTerm.set(searchInput.value)"
+        placeholder="Search bookmarks..."
+        class="w-full rounded-lg border border-gray-200 bg-white py-2 pl-9 pr-3 text-sm text-gray-700 placeholder:text-gray-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+      />
+    </div>
+
+    <div class="flex items-center gap-2">
+      <button
+        type="button"
+        (click)="favoritesOnly.set(!favoritesOnly())"
+        [class]="
+          favoritesOnly()
+            ? 'flex items-center gap-1.5 rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-sm font-medium text-blue-600 transition'
+            : 'flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-600 transition hover:bg-gray-50'
+        "
+      >
+        <mat-icon class="!text-[18px]">{{ favoritesOnly() ? 'star' : 'star_border' }}</mat-icon>
+        Favorites
+      </button>
+
+      <button
+        type="button"
+        [matMenuTriggerFor]="sortMenu"
+        class="flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-600 transition hover:bg-gray-50"
+      >
+        <mat-icon class="!text-[18px]">sort</mat-icon>
+        Sort
+      </button>
+      <mat-menu #sortMenu="matMenu">
+        <button mat-menu-item (click)="setSort('createdAt', 'desc')">Newest first</button>
+        <button mat-menu-item (click)="setSort('createdAt', 'asc')">Oldest first</button>
+        <button mat-menu-item (click)="setSort('title', 'asc')">Title (A–Z)</button>
+        <button mat-menu-item (click)="setSort('title', 'desc')">Title (Z–A)</button>
+      </mat-menu>
+    </div>
+  </div>
+
+  @if (error()) {
+    <div class="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700" role="alert">
+      {{ error() }}
+    </div>
+  }
+
+  @if (loading()) {
+    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      @for (i of [1, 2, 3, 4, 5, 6]; track i) {
+        <div class="h-40 animate-pulse rounded-2xl border border-gray-200 bg-gray-100"></div>
+      }
+    </div>
+  } @else if (filteredBookmarks().length) {
+    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      @for (bookmark of filteredBookmarks(); track bookmark._id) {
+        <app-bookmark-card
+          [bookmark]="bookmark"
+          [favoritePending]="pendingFavoriteId() === bookmark._id"
+          (edit)="openEditDialog($event)"
+          (remove)="confirmDelete($event)"
+          (toggleFavorite)="toggleFavorite($event)"
+        />
+      }
+    </div>
+  } @else if (bookmarks().length) {
+    <app-empty-state
+      icon="search_off"
+      title="No matching bookmarks"
+      message="Try a different search term or clear your filters."
+    />
+  } @else {
+    <app-empty-state
+      icon="bookmark_border"
+      title="No bookmarks yet"
+      message="Save your first link to start building your resource library."
+      actionLabel="Add Bookmark"
+      (action)="openCreateDialog()"
+    />
+  }
+</div>

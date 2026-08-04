@@ -1,24 +1,30 @@
 import { Component, inject } from '@angular/core';
-import { Router } from '@angular/router';
-import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { AuthService } from '../../core/services/auth.service';
+
+interface StatCard {
+  label: string;
+  value: number;
+  icon: string;
+}
+
+const STAT_CARDS: StatCard[] = [
+  { label: 'Bookmarks', value: 0, icon: 'bookmark' },
+  { label: 'Folders', value: 0, icon: 'folder' },
+  { label: 'Notes', value: 0, icon: 'description' },
+  { label: 'Snippets', value: 0, icon: 'code' },
+];
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [MatButtonModule, MatIconModule],
+  imports: [MatIconModule],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.css',
 })
 export class Dashboard {
   private readonly authService = inject(AuthService);
-  private readonly router = inject(Router);
 
   readonly currentUser = this.authService.currentUser;
-
-  logout(): void {
-    this.authService.logout();
-    this.router.navigate(['/auth/login']);
-  }
+  readonly stats = STAT_CARDS;
 }

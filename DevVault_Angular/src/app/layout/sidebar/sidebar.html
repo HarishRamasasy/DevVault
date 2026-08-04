@@ -1,0 +1,30 @@
+<div class="flex h-full flex-col bg-white">
+  <div class="flex h-16 shrink-0 items-center gap-2 border-b border-gray-200 px-4">
+    <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-indigo-600 text-white">
+      <mat-icon class="!text-[20px]">dashboard</mat-icon>
+    </span>
+    @if (!collapsed) {
+      <span class="truncate text-lg font-semibold text-gray-900">DevVault</span>
+    }
+  </div>
+
+  <nav class="flex-1 space-y-1 overflow-y-auto px-3 py-4">
+    @for (item of navItems; track item.route) {
+      <a
+        [routerLink]="item.route"
+        routerLinkActive="bg-blue-50 !text-blue-600"
+        #rla="routerLinkActive"
+        [matTooltip]="collapsed ? item.label : ''"
+        matTooltipPosition="right"
+        (click)="onNavigate()"
+        class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-gray-600 transition hover:bg-gray-100 hover:text-gray-900"
+        [class.justify-center]="collapsed"
+      >
+        <mat-icon class="!text-[20px]" [class.text-blue-600]="rla.isActive">{{ item.icon }}</mat-icon>
+        @if (!collapsed) {
+          <span class="truncate">{{ item.label }}</span>
+        }
+      </a>
+    }
+  </nav>
+</div>
