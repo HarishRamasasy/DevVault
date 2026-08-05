@@ -32,6 +32,7 @@ export class BookmarkFormDialog {
     description: this.fb.control(this.data.bookmark?.description ?? '', [Validators.maxLength(500)]),
     type: this.fb.control<BookmarkType>(this.data.bookmark?.type ?? 'other', [Validators.required]),
     tags: this.fb.control(this.data.bookmark?.tags.join(', ') ?? ''),
+    favorite: this.fb.control(this.data.bookmark?.favorite ?? false),
   });
 
   submit(): void {
@@ -40,7 +41,7 @@ export class BookmarkFormDialog {
       return;
     }
 
-    const { title, url, description, type, tags } = this.form.getRawValue();
+    const { title, url, description, type, tags, favorite } = this.form.getRawValue();
 
     const payload: BookmarkPayload = {
       title: title!.trim(),
@@ -51,6 +52,7 @@ export class BookmarkFormDialog {
         .split(',')
         .map((tag) => tag.trim())
         .filter(Boolean),
+      favorite: favorite ?? false,
     };
 
     this.dialogRef.close(payload);

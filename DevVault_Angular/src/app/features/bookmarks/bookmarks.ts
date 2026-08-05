@@ -1,40 +1,51 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, DestroyRef, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { HttpErrorResponse } from '@angular/common/http';
 import { MatDialog } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
+import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
 import { BookmarkService } from '../../core/services/bookmark.service';
+import { NotificationService } from '../../core/services/notification.service';
 import { extractErrorMessage } from '../../core/utils/http-error';
 import { Bookmark, BookmarkPayload } from '../../core/models/bookmark.model';
 import { EmptyState } from '../../shared/components/empty-state/empty-state';
 import { ConfirmDialog, ConfirmDialogData } from '../../shared/components/confirm-dialog/confirm-dialog';
 import { BookmarkCard } from './components/bookmark-card/bookmark-card';
+import { BookmarkSkeleton } from './components/bookmark-skeleton/bookmark-skeleton';
 import { BookmarkFormDialog, BookmarkFormDialogData } from './components/bookmark-form-dialog/bookmark-form-dialog';
 
 type SortBy = 'createdAt' | 'title';
 type SortOrder = 'asc' | 'desc';
 
+const SEARCH_DEBOUNCE_MS = 300;
+
 @Component({
   selector: 'app-bookmarks',
   standalone: true,
-  imports: [MatIconModule, MatMenuModule, BookmarkCard, EmptyState],
+  imports: [MatIconModule, MatMenuModule, BookmarkCard, BookmarkSkeleton, EmptyState],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './bookmarks.html',
   styleUrl: './bookmarks.css',
 })
 export class Bookmarks {
   private readonly bookmarkService = inject(BookmarkService);
+  private readonly notify = inject(NotificationService);
   private readonly dialog = inject(MatDialog);
+  private readonly destroyRef = inject(DestroyRef);
 
   readonly bookmarks = signal<Bookmark[]>([]);
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);
   readonly pendingFavoriteId = signal<string | null>(null);
 
+  readonly searchInputValue = signal('');
   readonly searchTerm = signal('');
   readonly favoritesOnly = signal(false);
   readonly sortBy = signal<SortBy>('createdAt');
   readonly sortOrder = signal<SortOrder>('desc');
+
+  private readonly searchInput$ = new Subject<string>();
 
   readonly filteredBookmarks = computed(() => {
     const term = this.searchTerm().trim().toLowerCase();
@@ -66,6 +77,15 @@ export class Bookmarks {
 
   constructor() {
     this.loadBookmarks();
+
+    this.searchInput$
+      .pipe(debounceTime(SEARCH_DEBOUNCE_MS), distinctUntilChanged(), takeUntilDestroyed(this.destroyRef))
+      .subscribe((term) => this.searchTerm.set(term));
+  }
+
+  onSearchInput(value: string): void {
+    this.searchInputValue.set(value);
+    this.searchInput$.next(value);
   }
 
   loadBookmarks(): void {
@@ -95,8 +115,11 @@ export class Bookmarks {
       if (!payload) return;
 
       this.bookmarkService.create(payload).subscribe({
-        next: (bookmark) => this.bookmarks.update((list) => [bookmark, ...list]),
-        error: (err: HttpErrorResponse) => this.error.set(extractErrorMessage(err, 'Unable to create bookmark.')),
+        next: (bookmark) => {
+          this.bookmarks.update((list) => [bookmark, ...list]);
+          this.notify.success('Bookmark created successfully.');
+        },
+        error: (err: HttpErrorResponse) => this.notify.error(extractErrorMessage(err, 'Unable to create bookmark.')),
       });
     });
   }
@@ -112,9 +135,11 @@ export class Bookmarks {
       if (!payload) return;
 
       this.bookmarkService.update(bookmark._id, payload).subscribe({
-        next: (updated) =>
-          this.bookmarks.update((list) => list.map((item) => (item._id === updated._id ? updated : item))),
-        error: (err: HttpErrorResponse) => this.error.set(extractErrorMessage(err, 'Unable to update bookmark.')),
+        next: (updated) => {
+          this.bookmarks.update((list) => list.map((item) => (item._id === updated._id ? updated : item)));
+          this.notify.success('Bookmark updated successfully.');
+        },
+        error: (err: HttpErrorResponse) => this.notify.error(extractErrorMessage(err, 'Unable to update bookmark.')),
       });
     });
   }
@@ -134,8 +159,11 @@ export class Bookmarks {
       if (!confirmed) return;
 
       this.bookmarkService.delete(bookmark._id).subscribe({
-        next: () => this.bookmarks.update((list) => list.filter((item) => item._id !== bookmark._id)),
-        error: (err: HttpErrorResponse) => this.error.set(extractErrorMessage(err, 'Unable to delete bookmark.')),
+        next: () => {
+          this.bookmarks.update((list) => list.filter((item) => item._id !== bookmark._id));
+          this.notify.success('Bookmark deleted successfully.');
+        },
+        error: (err: HttpErrorResponse) => this.notify.error(extractErrorMessage(err, 'Unable to delete bookmark.')),
       });
     });
   }
@@ -149,7 +177,7 @@ export class Bookmarks {
         this.pendingFavoriteId.set(null);
       },
       error: (err: HttpErrorResponse) => {
-        this.error.set(extractErrorMessage(err, 'Unable to update favorite status.'));
+        this.notify.error(extractErrorMessage(err, 'Unable to update favorite status.'));
         this.pendingFavoriteId.set(null);
       },
     });

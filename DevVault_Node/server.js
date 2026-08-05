@@ -9,7 +9,15 @@ import { notFound, errorHandler } from './middleware/error.middleware.js';
 
 const app = express();
 
-app.use(cors({ origin: process.env.CLIENT_URL, credentials: true }));
+app.use(
+  cors({
+    origin: process.env.CLIENT_URL,
+    credentials: true,
+    methods: ['GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    maxAge: 0,
+  })
+);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
