@@ -1,12 +1,19 @@
 export type BookmarkType = 'article' | 'video' | 'documentation' | 'repository' | 'tool' | 'other';
 
+export interface BookmarkFolderRef {
+  _id: string;
+  name: string;
+  color: string;
+  icon: string;
+}
+
 export interface Bookmark {
   _id: string;
   title: string;
   url: string;
   description: string;
   type: BookmarkType;
-  folder: string | null;
+  folder: BookmarkFolderRef | null;
   tags: string[];
   favorite: boolean;
   archived: boolean;

@@ -32,8 +32,8 @@ export const routes: Routes = [
       },
       {
         path: 'folders',
-        loadComponent: () => import('./shared/components/coming-soon/coming-soon').then((m) => m.ComingSoon),
-        data: { title: 'Folders', icon: 'folder' },
+        loadComponent: () => import('./features/folders/folders').then((m) => m.Folders),
+        data: { title: 'Folders' },
       },
       {
         path: 'tags',

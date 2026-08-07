@@ -1,10 +1,13 @@
 import Bookmark from '../models/Bookmark.js';
+import Folder from '../models/Folder.js';
 import { ApiError } from '../utils/ApiError.js';
+
+const FOLDER_POPULATE = { path: 'folder', select: 'name color icon' };
 
 const normalizeTags = (tags = []) => [...new Set(tags.map((tag) => tag.trim().toLowerCase()).filter(Boolean))];
 
 const findOwnedBookmark = async (id, userId) => {
-  const bookmark = await Bookmark.findById(id);
+  const bookmark = await Bookmark.findById(id).populate(FOLDER_POPULATE);
   if (!bookmark) {
     throw new ApiError(404, 'Bookmark not found');
   }
@@ -16,12 +19,25 @@ const findOwnedBookmark = async (id, userId) => {
   return bookmark;
 };
 
+const assertOwnedFolder = async (folderId, userId) => {
+  if (!folderId) return;
+
+  const folder = await Folder.findById(folderId);
+  if (!folder || folder.user.toString() !== userId.toString()) {
+    throw new ApiError(404, 'Folder not found');
+  }
+};
+
 export const createBookmark = async (userId, payload) => {
+  await assertOwnedFolder(payload.folder, userId);
+
   const bookmark = await Bookmark.create({
     ...payload,
     tags: normalizeTags(payload.tags),
     user: userId,
   });
+
+  await bookmark.populate(FOLDER_POPULATE);
 
   return bookmark.toJSON();
 };
@@ -58,7 +74,7 @@ export const listBookmarks = async (userId, filters) => {
   const pageSize = limit !== undefined ? Number(limit) : undefined;
   const isPaginated = pageNumber !== undefined || pageSize !== undefined;
 
-  let cursor = Bookmark.find(query).sort(sort);
+  let cursor = Bookmark.find(query).sort(sort).populate(FOLDER_POPULATE);
 
   let pagination = { page: 1, limit: total, total, totalPages: total > 0 ? 1 : 0 };
 
@@ -86,6 +102,10 @@ export const getBookmarkById = async (id, userId) => {
 export const updateBookmark = async (id, userId, payload) => {
   const bookmark = await findOwnedBookmark(id, userId);
 
+  if (payload.folder) {
+    await assertOwnedFolder(payload.folder, userId);
+  }
+
   const updates = { ...payload };
   if (updates.tags) {
     updates.tags = normalizeTags(updates.tags);
@@ -93,6 +113,7 @@ export const updateBookmark = async (id, userId, payload) => {
 
   Object.assign(bookmark, updates);
   await bookmark.save();
+  await bookmark.populate(FOLDER_POPULATE);
 
   return bookmark.toJSON();
 };

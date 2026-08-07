@@ -53,6 +53,13 @@
     <p class="mt-1.5 line-clamp-2 text-sm text-gray-500">{{ bookmark.description }}</p>
   }
 
+  @if (bookmark.folder) {
+    <span class="mt-2 inline-flex w-fit items-center gap-1.5 rounded-md bg-gray-50 px-2 py-1 text-xs font-medium text-gray-600">
+      <span class="h-1.5 w-1.5 shrink-0 rounded-full" [style.background]="bookmark.folder.color"></span>
+      {{ bookmark.folder.name }}
+    </span>
+  }
+
   @if (bookmark.tags.length) {
     <div class="mt-3 flex flex-wrap gap-1.5">
       @for (tag of bookmark.tags; track tag) {

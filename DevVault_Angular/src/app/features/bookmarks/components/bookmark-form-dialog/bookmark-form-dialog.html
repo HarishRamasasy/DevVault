@@ -67,6 +67,51 @@
       </div>
 
       <div>
+        <label for="folder" class="block text-sm font-medium text-gray-700">Folder</label>
+        <div class="relative mt-1.5">
+          <input
+            id="folder"
+            type="text"
+            #folderInput
+            [value]="folderSearchText()"
+            (input)="onFolderInput(folderInput.value)"
+            [matAutocomplete]="folderAuto"
+            placeholder="Search a folder..."
+            class="block w-full rounded-lg border border-gray-300 py-2.5 pl-3.5 pr-9 text-sm text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/30"
+          />
+          @if (selectedFolder()) {
+            <button
+              type="button"
+              (click)="clearFolder()"
+              aria-label="Clear folder selection"
+              class="absolute right-2 top-1/2 flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded-md text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+            >
+              <mat-icon class="!text-[16px]">close</mat-icon>
+            </button>
+          }
+          <mat-autocomplete #folderAuto="matAutocomplete" (optionSelected)="onFolderSelected($event)">
+            @for (folder of filteredFolders(); track folder._id) {
+              <mat-option [value]="folder">
+                <span class="flex items-center gap-2">
+                  <span
+                    class="flex h-5 w-5 shrink-0 items-center justify-center rounded text-white"
+                    [style.background]="folder.color"
+                  >
+                    <mat-icon class="!text-[13px]">{{ folder.icon }}</mat-icon>
+                  </span>
+                  {{ folder.name }}
+                </span>
+              </mat-option>
+            }
+            @if (!filteredFolders().length) {
+              <mat-option disabled>No folders found</mat-option>
+            }
+          </mat-autocomplete>
+        </div>
+        <p class="mt-1 text-xs text-gray-400">Optional. Leave empty to keep this bookmark unfiled.</p>
+      </div>
+
+      <div>
         <label for="tags" class="block text-sm font-medium text-gray-700">Tags</label>
         <input
           id="tags"
