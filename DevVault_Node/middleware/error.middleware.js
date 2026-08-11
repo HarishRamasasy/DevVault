@@ -20,10 +20,18 @@ export const errorHandler = (err, req, res, next) => {
   }
 
   statusCode = statusCode || 500;
-  message = message || 'Internal server error';
 
-  if (process.env.NODE_ENV !== 'production' && statusCode === 500) {
+  if (statusCode === 500) {
+    // Always log unexpected errors server-side so production incidents stay observable.
     console.error(err);
+  }
+
+  if (statusCode === 500 && process.env.NODE_ENV === 'production') {
+    // Never leak internal exception details (stack traces, cast/driver errors) to clients.
+    message = 'Internal server error';
+    errors = [];
+  } else {
+    message = message || 'Internal server error';
   }
 
   res.status(statusCode).json({

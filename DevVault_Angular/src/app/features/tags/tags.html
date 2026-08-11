@@ -1,0 +1,40 @@
+<div class="space-y-6">
+  <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-900">Tags</h1>
+      <p class="mt-1 text-sm text-gray-500">Categorize your bookmarks with flexible, reusable labels.</p>
+    </div>
+    <button
+      type="button"
+      (click)="openCreateDialog()"
+      class="flex items-center justify-center gap-1.5 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700"
+    >
+      <mat-icon class="!text-[18px]">add</mat-icon>
+      New Tag
+    </button>
+  </div>
+
+  @if (error()) {
+    <div class="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700" role="alert">
+      {{ error() }}
+    </div>
+  }
+
+  @if (loading()) {
+    <app-card-skeleton variant="tag" [count]="8" />
+  } @else if (tags().length) {
+    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      @for (tag of tags(); track tag._id) {
+        <app-tag-card [tag]="tag" (edit)="openEditDialog($event)" (remove)="confirmDelete($event)" />
+      }
+    </div>
+  } @else {
+    <app-empty-state
+      icon="label_off"
+      title="No tags yet."
+      message="Create a tag to start categorizing your bookmarks."
+      actionLabel="Create Tag"
+      (action)="openCreateDialog()"
+    />
+  }
+</div>

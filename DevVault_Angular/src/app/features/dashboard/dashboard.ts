@@ -1,7 +1,14 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { HttpErrorResponse } from '@angular/common/http';
+import { Observable } from 'rxjs';
 import { MatIconModule } from '@angular/material/icon';
 import { AuthService } from '../../core/services/auth.service';
+import { BookmarkService } from '../../core/services/bookmark.service';
 import { FolderService } from '../../core/services/folder.service';
+import { TagService } from '../../core/services/tag.service';
+import { NotificationService } from '../../core/services/notification.service';
+import { extractErrorMessage } from '../../core/utils/http-error';
 
 interface StatCard {
   label: string;
@@ -12,6 +19,7 @@ interface StatCard {
 const STAT_CARDS: StatCard[] = [
   { label: 'Bookmarks', value: 0, icon: 'bookmark' },
   { label: 'Folders', value: 0, icon: 'folder' },
+  { label: 'Tags', value: 0, icon: 'label' },
   { label: 'Notes', value: 0, icon: 'description' },
   { label: 'Snippets', value: 0, icon: 'code' },
 ];
@@ -22,19 +30,29 @@ const STAT_CARDS: StatCard[] = [
   imports: [MatIconModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './dashboard.html',
-  styleUrl: './dashboard.css',
 })
 export class Dashboard {
   private readonly authService = inject(AuthService);
+  private readonly bookmarkService = inject(BookmarkService);
   private readonly folderService = inject(FolderService);
+  private readonly tagService = inject(TagService);
+  private readonly notify = inject(NotificationService);
+  private readonly destroyRef = inject(DestroyRef);
 
   readonly currentUser = this.authService.currentUser;
   readonly stats = signal<StatCard[]>(STAT_CARDS);
 
   constructor() {
-    this.folderService.list().subscribe({
-      next: (folders) => this.updateStat('Folders', folders.length),
-      error: () => this.updateStat('Folders', 0),
+    this.loadStat('Bookmarks', this.bookmarkService.list(), 'bookmark');
+    this.loadStat('Folders', this.folderService.list(), 'folder');
+    this.loadStat('Tags', this.tagService.list(), 'tag');
+  }
+
+  private loadStat(label: string, request: Observable<unknown[]>, resourceName: string): void {
+    request.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: (result) => this.updateStat(label, result.length),
+      error: (err: HttpErrorResponse) =>
+        this.notify.error(extractErrorMessage(err, `Unable to load ${resourceName} count.`)),
     });
   }
 

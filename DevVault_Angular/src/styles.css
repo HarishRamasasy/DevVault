@@ -7,6 +7,57 @@ body {
   height: 100%;
 }
 
+/*
+ * Every feature/layout/shared component is an unknown custom element to the
+ * browser (default display: inline) unless told otherwise. Previously each
+ * component carried its own near-identical `:host { display: block; }`
+ * stylesheet; consolidated here since the rule never varied.
+ */
+app-login,
+app-register,
+app-bookmarks,
+app-bookmark-form-dialog,
+app-dashboard,
+app-folders,
+app-folder-form-dialog,
+app-tags,
+app-tag-form-dialog,
+app-breadcrumb,
+app-navbar,
+app-coming-soon,
+app-confirm-dialog,
+app-empty-state,
+app-card-skeleton,
+app-color-picker {
+  display: block;
+}
+
+app-bookmark-card,
+app-folder-card,
+app-tag-card,
+app-layout,
+app-sidebar {
+  display: block;
+  height: 100%;
+}
+
+/*
+ * Shared control styles. Previously the same Tailwind class string was
+ * hand-copied verbatim across every dialog template; consolidated here so
+ * there is one place to change the look of a form input or dialog button.
+ */
+.form-input {
+  @apply block w-full rounded-lg border border-gray-300 px-3.5 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/30;
+}
+
+.btn-primary {
+  @apply rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700;
+}
+
+.btn-secondary {
+  @apply rounded-lg px-4 py-2 text-sm font-medium text-gray-600 transition hover:bg-gray-100;
+}
+
 .app-snackbar {
   --mdc-snackbar-container-color: #1f2937;
   --mdc-snackbar-supporting-text-color: #ffffff;

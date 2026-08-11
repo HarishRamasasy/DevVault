@@ -21,7 +21,7 @@
   }
 
   @if (loading()) {
-    <app-folder-skeleton [count]="6" />
+    <app-card-skeleton variant="folder" [count]="6" />
   } @else if (folders().length) {
     <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
       @for (folder of folders(); track folder._id) {

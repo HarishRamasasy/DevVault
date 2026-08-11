@@ -1,4 +1,4 @@
-import { Component, computed, effect, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, inject, signal } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { BreakpointObserver } from '@angular/cdk/layout';
 import { toSignal } from '@angular/core/rxjs-interop';
@@ -15,8 +15,8 @@ const TABLET_QUERY = '(min-width: 768px) and (max-width: 1023px)';
   selector: 'app-layout',
   standalone: true,
   imports: [RouterOutlet, MatSidenavModule, Sidebar, Navbar, Breadcrumb],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './layout.html',
-  styleUrl: './layout.css',
 })
 export class Layout {
   private readonly breakpointObserver = inject(BreakpointObserver);

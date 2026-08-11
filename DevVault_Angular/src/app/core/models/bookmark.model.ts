@@ -7,6 +7,12 @@ export interface BookmarkFolderRef {
   icon: string;
 }
 
+export interface BookmarkTagRef {
+  _id: string;
+  name: string;
+  color: string;
+}
+
 export interface Bookmark {
   _id: string;
   title: string;
@@ -14,7 +20,7 @@ export interface Bookmark {
   description: string;
   type: BookmarkType;
   folder: BookmarkFolderRef | null;
-  tags: string[];
+  tags: BookmarkTagRef[];
   favorite: boolean;
   archived: boolean;
   user: string;

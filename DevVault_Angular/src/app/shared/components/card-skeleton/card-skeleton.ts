@@ -1,13 +1,15 @@
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 
+export type CardSkeletonVariant = 'bookmark' | 'folder' | 'tag';
+
 @Component({
-  selector: 'app-bookmark-skeleton',
+  selector: 'app-card-skeleton',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  templateUrl: './bookmark-skeleton.html',
-  styleUrl: './bookmark-skeleton.css',
+  templateUrl: './card-skeleton.html',
 })
-export class BookmarkSkeleton {
+export class CardSkeleton {
+  @Input() variant: CardSkeletonVariant = 'bookmark';
   @Input() count = 6;
 
   get placeholders(): number[] {

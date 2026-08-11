@@ -13,7 +13,7 @@
           formControlName="name"
           maxlength="50"
           placeholder="e.g. Frontend Resources"
-          class="mt-1.5 block w-full rounded-lg border border-gray-300 px-3.5 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/30"
+          class="mt-1.5 form-input"
         />
         @if (form.controls.name.hasError('required') && form.controls.name.touched) {
           <p class="mt-1 text-xs text-red-600">Folder name is required</p>
@@ -30,7 +30,7 @@
           formControlName="description"
           rows="3"
           placeholder="Optional notes about this folder"
-          class="mt-1.5 block w-full resize-none rounded-lg border border-gray-300 px-3.5 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/30"
+          class="mt-1.5 form-input resize-none"
         ></textarea>
         @if (form.controls.description.hasError('maxlength') && form.controls.description.touched) {
           <p class="mt-1 text-xs text-red-600">Description cannot exceed 500 characters</p>
@@ -39,23 +39,8 @@
 
       <div>
         <span class="block text-sm font-medium text-gray-700">Color</span>
-        <div class="mt-2 flex flex-wrap gap-2">
-          @for (color of colors; track color) {
-            <button
-              type="button"
-              (click)="selectColor(color)"
-              [style.background]="color"
-              [attr.aria-label]="'Select color ' + color"
-              [attr.aria-pressed]="form.controls.color.value === color"
-              class="flex h-8 w-8 items-center justify-center rounded-full ring-offset-2 transition"
-              [class.ring-2]="form.controls.color.value === color"
-              [class.ring-gray-900]="form.controls.color.value === color"
-            >
-              @if (form.controls.color.value === color) {
-                <mat-icon class="!text-[16px] text-white">check</mat-icon>
-              }
-            </button>
-          }
+        <div class="mt-2">
+          <app-color-picker [colors]="colors" [selected]="form.controls.color.value" (colorSelected)="selectColor($event)" />
         </div>
       </div>
 
@@ -86,13 +71,13 @@
     <button
       type="button"
       (click)="cancel()"
-      class="rounded-lg px-4 py-2 text-sm font-medium text-gray-600 transition hover:bg-gray-100"
+      class="btn-secondary"
     >
       Cancel
     </button>
     <button
       type="submit"
-      class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700"
+      class="btn-primary"
     >
       {{ isEditMode ? 'Save Changes' : 'Create Folder' }}
     </button>

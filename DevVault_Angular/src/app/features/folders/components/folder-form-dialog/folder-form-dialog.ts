@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
+import { ColorPicker } from '../../../../shared/components/color-picker/color-picker';
 import { Folder, FolderPayload, FOLDER_COLORS, FOLDER_ICONS } from '../../../../core/models/folder.model';
 
 export interface FolderFormDialogData {
@@ -11,10 +12,9 @@ export interface FolderFormDialogData {
 @Component({
   selector: 'app-folder-form-dialog',
   standalone: true,
-  imports: [ReactiveFormsModule, MatDialogModule, MatIconModule],
+  imports: [ReactiveFormsModule, MatDialogModule, MatIconModule, ColorPicker],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './folder-form-dialog.html',
-  styleUrl: './folder-form-dialog.css',
 })
 export class FolderFormDialog {
   private readonly fb = inject(FormBuilder);

@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, DestroyRef, inject, signal } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { HttpErrorResponse } from '@angular/common/http';
 import { MatDialog } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
@@ -9,10 +9,12 @@ import { BookmarkService } from '../../core/services/bookmark.service';
 import { NotificationService } from '../../core/services/notification.service';
 import { extractErrorMessage } from '../../core/utils/http-error';
 import { Bookmark, BookmarkPayload } from '../../core/models/bookmark.model';
+import { TagService } from '../../core/services/tag.service';
+import { Tag } from '../../core/models/tag.model';
 import { EmptyState } from '../../shared/components/empty-state/empty-state';
+import { CardSkeleton } from '../../shared/components/card-skeleton/card-skeleton';
 import { ConfirmDialog, ConfirmDialogData } from '../../shared/components/confirm-dialog/confirm-dialog';
 import { BookmarkCard } from './components/bookmark-card/bookmark-card';
-import { BookmarkSkeleton } from './components/bookmark-skeleton/bookmark-skeleton';
 import { BookmarkFormDialog, BookmarkFormDialogData } from './components/bookmark-form-dialog/bookmark-form-dialog';
 
 type SortBy = 'createdAt' | 'title';
@@ -23,13 +25,13 @@ const SEARCH_DEBOUNCE_MS = 300;
 @Component({
   selector: 'app-bookmarks',
   standalone: true,
-  imports: [MatIconModule, MatMenuModule, BookmarkCard, BookmarkSkeleton, EmptyState],
+  imports: [MatIconModule, MatMenuModule, BookmarkCard, CardSkeleton, EmptyState],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './bookmarks.html',
-  styleUrl: './bookmarks.css',
 })
 export class Bookmarks {
   private readonly bookmarkService = inject(BookmarkService);
+  private readonly tagService = inject(TagService);
   private readonly notify = inject(NotificationService);
   private readonly dialog = inject(MatDialog);
   private readonly destroyRef = inject(DestroyRef);
@@ -45,14 +47,23 @@ export class Bookmarks {
   readonly sortBy = signal<SortBy>('createdAt');
   readonly sortOrder = signal<SortOrder>('desc');
 
+  readonly tags = toSignal(this.tagService.list(), { initialValue: [] as Tag[] });
+  readonly selectedTagId = signal<string | null>(null);
+  readonly selectedTag = computed(() => this.tags().find((tag) => tag._id === this.selectedTagId()) ?? null);
+
   private readonly searchInput$ = new Subject<string>();
 
   readonly filteredBookmarks = computed(() => {
     const term = this.searchTerm().trim().toLowerCase();
+    const tagId = this.selectedTagId();
     let list = this.bookmarks();
 
     if (this.favoritesOnly()) {
       list = list.filter((bookmark) => bookmark.favorite);
+    }
+
+    if (tagId) {
+      list = list.filter((bookmark) => bookmark.tags.some((tag) => tag._id === tagId));
     }
 
     if (term) {
@@ -61,7 +72,7 @@ export class Bookmarks {
           bookmark.title.toLowerCase().includes(term) ||
           bookmark.description.toLowerCase().includes(term) ||
           bookmark.url.toLowerCase().includes(term) ||
-          bookmark.tags.some((tag) => tag.includes(term)),
+          bookmark.tags.some((tag) => tag.name.toLowerCase().includes(term)),
       );
     }
 
@@ -102,6 +113,10 @@ export class Bookmarks {
         this.loading.set(false);
       },
     });
+  }
+
+  setTagFilter(tagId: string | null): void {
+    this.selectedTagId.set(tagId);
   }
 
   openCreateDialog(): void {

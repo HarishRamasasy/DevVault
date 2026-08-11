@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Output, computed, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, EventEmitter, Output, computed, inject } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
@@ -8,8 +8,8 @@ import { AuthService } from '../../core/services/auth.service';
   selector: 'app-navbar',
   standalone: true,
   imports: [RouterLink, MatIconModule, MatMenuModule],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './navbar.html',
-  styleUrl: './navbar.css',
 })
 export class Navbar {
   private readonly authService = inject(AuthService);

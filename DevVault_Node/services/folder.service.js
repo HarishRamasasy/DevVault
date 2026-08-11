@@ -1,38 +1,19 @@
 import mongoose from 'mongoose';
 import Folder from '../models/Folder.js';
 import Bookmark from '../models/Bookmark.js';
-import { ApiError } from '../utils/ApiError.js';
+import { findOwnedDocument } from '../utils/ownership.js';
+import { assertUniqueName } from '../utils/uniqueName.js';
+import { stripEmptyStrings } from '../utils/sanitize.js';
 
-const findOwnedFolder = async (id, userId) => {
-  const folder = await Folder.findById(id);
-  if (!folder) {
-    throw new ApiError(404, 'Folder not found');
-  }
+const OPTIONAL_STYLE_FIELDS = ['color', 'icon'];
 
-  if (folder.user.toString() !== userId.toString()) {
-    throw new ApiError(403, 'You are not allowed to access this folder');
-  }
-
-  return folder;
-};
-
-const assertUniqueName = async (userId, name, excludeId) => {
-  const query = Folder.findOne({ user: userId, name }).collation({ locale: 'en', strength: 2 });
-  if (excludeId) {
-    query.where('_id').ne(excludeId);
-  }
-
-  const existing = await query;
-  if (existing) {
-    throw new ApiError(409, 'A folder with this name already exists');
-  }
-};
+const findOwnedFolder = (id, userId) => findOwnedDocument(Folder, id, userId, 'Folder');
 
 export const createFolder = async (userId, payload) => {
-  await assertUniqueName(userId, payload.name);
+  await assertUniqueName(Folder, userId, payload.name, 'Folder');
 
   const folder = await Folder.create({
-    ...payload,
+    ...stripEmptyStrings(payload, OPTIONAL_STYLE_FIELDS),
     user: userId,
   });
 
@@ -65,10 +46,10 @@ export const updateFolder = async (id, userId, payload) => {
   const folder = await findOwnedFolder(id, userId);
 
   if (payload.name && payload.name !== folder.name) {
-    await assertUniqueName(userId, payload.name, folder._id);
+    await assertUniqueName(Folder, userId, payload.name, 'Folder', folder._id);
   }
 
-  Object.assign(folder, payload);
+  Object.assign(folder, stripEmptyStrings(payload, OPTIONAL_STYLE_FIELDS));
   await folder.save();
 
   return folder.toJSON();

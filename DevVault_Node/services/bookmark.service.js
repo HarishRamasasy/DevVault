@@ -1,23 +1,21 @@
 import Bookmark from '../models/Bookmark.js';
 import Folder from '../models/Folder.js';
+import Tag from '../models/Tag.js';
 import { ApiError } from '../utils/ApiError.js';
+import { findOwnedDocument } from '../utils/ownership.js';
 
 const FOLDER_POPULATE = { path: 'folder', select: 'name color icon' };
+const TAG_POPULATE = { path: 'tags', select: 'name color' };
 
-const normalizeTags = (tags = []) => [...new Set(tags.map((tag) => tag.trim().toLowerCase()).filter(Boolean))];
+const dedupeIds = (ids = []) => [...new Set(ids.map((id) => id.toString()))];
 
-const findOwnedBookmark = async (id, userId) => {
-  const bookmark = await Bookmark.findById(id).populate(FOLDER_POPULATE);
-  if (!bookmark) {
-    throw new ApiError(404, 'Bookmark not found');
-  }
+// A cleared <select>/autocomplete submits folder: '' to mean "no folder" —
+// normalize that to null so it means the same thing here as an omitted field,
+// instead of reaching Mongoose as an invalid ObjectId cast.
+const normalizeFolderId = (folderId) => (folderId === '' ? null : folderId);
 
-  if (bookmark.user.toString() !== userId.toString()) {
-    throw new ApiError(403, 'You are not allowed to access this bookmark');
-  }
-
-  return bookmark;
-};
+const findOwnedBookmark = (id, userId) =>
+  findOwnedDocument(Bookmark, id, userId, 'Bookmark', [FOLDER_POPULATE, TAG_POPULATE]);
 
 const assertOwnedFolder = async (folderId, userId) => {
   if (!folderId) return;
@@ -28,16 +26,30 @@ const assertOwnedFolder = async (folderId, userId) => {
   }
 };
 
+const assertOwnedTags = async (tagIds, userId) => {
+  if (!tagIds || !tagIds.length) return;
+
+  const tags = await Tag.find({ _id: { $in: tagIds }, user: userId });
+  if (tags.length !== tagIds.length) {
+    throw new ApiError(404, 'One or more tags were not found');
+  }
+};
+
 export const createBookmark = async (userId, payload) => {
-  await assertOwnedFolder(payload.folder, userId);
+  const folder = normalizeFolderId(payload.folder);
+  await assertOwnedFolder(folder, userId);
+
+  const tags = dedupeIds(payload.tags);
+  await assertOwnedTags(tags, userId);
 
   const bookmark = await Bookmark.create({
     ...payload,
-    tags: normalizeTags(payload.tags),
+    folder,
+    tags,
     user: userId,
   });
 
-  await bookmark.populate(FOLDER_POPULATE);
+  await bookmark.populate([FOLDER_POPULATE, TAG_POPULATE]);
 
   return bookmark.toJSON();
 };
@@ -58,12 +70,12 @@ export const listBookmarks = async (userId, filters) => {
   }
 
   if (tag) {
-    query.tags = tag.trim().toLowerCase();
+    query.tags = tag;
   }
 
   if (search) {
     const regex = new RegExp(search.trim(), 'i');
-    query.$or = [{ title: regex }, { description: regex }, { url: regex }, { tags: regex }];
+    query.$or = [{ title: regex }, { description: regex }, { url: regex }];
   }
 
   const sort = { [sortBy]: sortOrder === 'asc' ? 1 : -1 };
@@ -74,7 +86,7 @@ export const listBookmarks = async (userId, filters) => {
   const pageSize = limit !== undefined ? Number(limit) : undefined;
   const isPaginated = pageNumber !== undefined || pageSize !== undefined;
 
-  let cursor = Bookmark.find(query).sort(sort).populate(FOLDER_POPULATE);
+  let cursor = Bookmark.find(query).sort(sort).populate([FOLDER_POPULATE, TAG_POPULATE]);
 
   let pagination = { page: 1, limit: total, total, totalPages: total > 0 ? 1 : 0 };
 
@@ -102,18 +114,23 @@ export const getBookmarkById = async (id, userId) => {
 export const updateBookmark = async (id, userId, payload) => {
   const bookmark = await findOwnedBookmark(id, userId);
 
-  if (payload.folder) {
-    await assertOwnedFolder(payload.folder, userId);
+  const updates = { ...payload };
+  if ('folder' in updates) {
+    updates.folder = normalizeFolderId(updates.folder);
   }
 
-  const updates = { ...payload };
+  if (updates.folder) {
+    await assertOwnedFolder(updates.folder, userId);
+  }
+
   if (updates.tags) {
-    updates.tags = normalizeTags(updates.tags);
+    updates.tags = dedupeIds(updates.tags);
+    await assertOwnedTags(updates.tags, userId);
   }
 
   Object.assign(bookmark, updates);
   await bookmark.save();
-  await bookmark.populate(FOLDER_POPULATE);
+  await bookmark.populate([FOLDER_POPULATE, TAG_POPULATE]);
 
   return bookmark.toJSON();
 };

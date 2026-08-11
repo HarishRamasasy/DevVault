@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import { RESOURCE_COLORS } from '../utils/colorPalette.js';
 
 export const FOLDER_ICONS = [
   'folder',
@@ -15,18 +16,7 @@ export const FOLDER_ICONS = [
   'psychology',
 ];
 
-export const FOLDER_COLORS = [
-  '#2563EB',
-  '#7C3AED',
-  '#DB2777',
-  '#DC2626',
-  '#EA580C',
-  '#D97706',
-  '#65A30D',
-  '#059669',
-  '#0891B2',
-  '#4B5563',
-];
+export const FOLDER_COLORS = RESOURCE_COLORS;
 
 const folderSchema = new mongoose.Schema(
   {

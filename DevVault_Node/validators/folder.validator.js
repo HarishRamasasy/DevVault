@@ -1,5 +1,6 @@
 import { body, param } from 'express-validator';
 import { FOLDER_ICONS, FOLDER_COLORS } from '../models/Folder.js';
+import { descriptionValidator } from './shared.validator.js';
 
 const nameValidator = body('name')
   .trim()
@@ -7,12 +8,6 @@ const nameValidator = body('name')
   .withMessage('Folder name is required')
   .isLength({ max: 50 })
   .withMessage('Folder name cannot exceed 50 characters');
-
-const descriptionValidator = body('description')
-  .optional({ values: 'falsy' })
-  .trim()
-  .isLength({ max: 500 })
-  .withMessage('Description cannot exceed 500 characters');
 
 const colorValidator = body('color')
   .optional({ values: 'falsy' })

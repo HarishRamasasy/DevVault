@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
@@ -12,8 +12,8 @@ import { passwordMatchValidator } from '../../../core/validators/password-match.
   selector: 'app-register',
   standalone: true,
   imports: [ReactiveFormsModule, RouterLink, MatIconModule],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './register.html',
-  styleUrl: './register.css',
 })
 export class Register {
   private readonly fb = inject(FormBuilder);

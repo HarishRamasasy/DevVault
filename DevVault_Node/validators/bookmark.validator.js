@@ -1,5 +1,6 @@
 import { body, param, query } from 'express-validator';
 import { BOOKMARK_TYPES } from '../models/Bookmark.js';
+import { descriptionValidator } from './shared.validator.js';
 
 const titleValidator = body('title')
   .trim()
@@ -15,12 +16,6 @@ const urlValidator = body('url')
   .isURL({ require_protocol: true })
   .withMessage('Provide a valid URL including http:// or https://');
 
-const descriptionValidator = body('description')
-  .optional({ values: 'falsy' })
-  .trim()
-  .isLength({ max: 500 })
-  .withMessage('Description cannot exceed 500 characters');
-
 const typeValidator = body('type')
   .optional({ values: 'falsy' })
   .isIn(BOOKMARK_TYPES)
@@ -30,7 +25,7 @@ const folderValidator = body('folder').optional({ values: 'falsy' }).isMongoId()
 
 const tagsValidator = [
   body('tags').optional().isArray().withMessage('Tags must be an array'),
-  body('tags.*').optional().isString().trim().notEmpty().withMessage('Tags must be non-empty strings'),
+  body('tags.*').optional().isMongoId().withMessage('Each tag must be a valid id'),
 ];
 
 const favoriteValidator = body('favorite').optional().isBoolean().withMessage('Favorite must be a boolean');
@@ -75,7 +70,7 @@ export const listBookmarksValidator = [
   query('favorite').optional().isBoolean().withMessage('Favorite must be a boolean'),
   query('archived').optional().isBoolean().withMessage('Archived must be a boolean'),
   query('type').optional().isIn(BOOKMARK_TYPES).withMessage(`Type must be one of: ${BOOKMARK_TYPES.join(', ')}`),
-  query('tag').optional().trim(),
+  query('tag').optional().isMongoId().withMessage('Tag must be a valid id'),
   query('sortBy').optional().isIn(['createdAt', 'title', 'updatedAt']).withMessage('Invalid sort field'),
   query('sortOrder').optional().isIn(['asc', 'desc']).withMessage('Sort order must be asc or desc'),
   query('page').optional().isInt({ min: 1 }).withMessage('Page must be a positive integer'),

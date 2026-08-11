@@ -32,7 +32,7 @@ const bookmarkSchema = new mongoose.Schema(
       default: null,
     },
     tags: {
-      type: [String],
+      type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Tag' }],
       default: [],
     },
     favorite: {
@@ -54,6 +54,8 @@ const bookmarkSchema = new mongoose.Schema(
 
 bookmarkSchema.index({ user: 1, createdAt: -1 });
 bookmarkSchema.index({ user: 1, favorite: 1 });
+bookmarkSchema.index({ user: 1, folder: 1 });
+bookmarkSchema.index({ user: 1, tags: 1 });
 
 bookmarkSchema.set('toJSON', {
   transform: (_doc, ret) => {

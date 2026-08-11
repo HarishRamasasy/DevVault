@@ -9,7 +9,6 @@ import { Folder } from '../../../../core/models/folder.model';
   imports: [MatIconModule, MatMenuModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './folder-card.html',
-  styleUrl: './folder-card.css',
 })
 export class FolderCard {
   @Input({ required: true }) folder!: Folder;

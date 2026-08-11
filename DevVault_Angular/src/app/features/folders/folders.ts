@@ -7,18 +7,17 @@ import { NotificationService } from '../../core/services/notification.service';
 import { extractErrorMessage } from '../../core/utils/http-error';
 import { Folder, FolderPayload } from '../../core/models/folder.model';
 import { EmptyState } from '../../shared/components/empty-state/empty-state';
+import { CardSkeleton } from '../../shared/components/card-skeleton/card-skeleton';
 import { ConfirmDialog, ConfirmDialogData } from '../../shared/components/confirm-dialog/confirm-dialog';
 import { FolderCard } from './components/folder-card/folder-card';
-import { FolderSkeleton } from './components/folder-skeleton/folder-skeleton';
 import { FolderFormDialog, FolderFormDialogData } from './components/folder-form-dialog/folder-form-dialog';
 
 @Component({
   selector: 'app-folders',
   standalone: true,
-  imports: [MatIconModule, FolderCard, FolderSkeleton, EmptyState],
+  imports: [MatIconModule, FolderCard, CardSkeleton, EmptyState],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './folders.html',
-  styleUrl: './folders.css',
 })
 export class Folders {
   private readonly folderService = inject(FolderService);
