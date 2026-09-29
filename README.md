@@ -251,10 +251,10 @@ _Screenshot coming soon_
 | Sprint | Focus | Status |
 |---|---|---|
 | Sprint 1 | Authentication | ✅ Complete |
-| Sprint 2 | Dashboard Layout | Planned |
-| Sprint 3 | Bookmarks CRUD | Planned |
-| Sprint 4 | Folder Management | Planned |
-| Sprint 5 | Tag Management | Planned |
+| Sprint 2 | Dashboard Layout | ✅ Complete |
+| Sprint 3 | Bookmarks CRUD | ✅ Complete |
+| Sprint 4 | Folder Management | ✅ Complete |
+| Sprint 5 | Tag Management | ✅ Complete |
 | Sprint 6 | Search | Planned |
 | Sprint 7 | Favorites | Planned |
 | Sprint 8 | Deployment | Planned |
