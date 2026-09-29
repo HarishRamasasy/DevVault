@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { HttpErrorResponse } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, map } from 'rxjs';
 import { MatIconModule } from '@angular/material/icon';
 import { AuthService } from '../../core/services/auth.service';
 import { BookmarkService } from '../../core/services/bookmark.service';
@@ -43,14 +43,14 @@ export class Dashboard {
   readonly stats = signal<StatCard[]>(STAT_CARDS);
 
   constructor() {
-    this.loadStat('Bookmarks', this.bookmarkService.list(), 'bookmark');
-    this.loadStat('Folders', this.folderService.list(), 'folder');
-    this.loadStat('Tags', this.tagService.list(), 'tag');
+    this.loadStat('Bookmarks', this.bookmarkService.list({ limit: 1 }).pipe(map((res) => res.pagination.total)), 'bookmark');
+    this.loadStat('Folders', this.folderService.list().pipe(map((folders) => folders.length)), 'folder');
+    this.loadStat('Tags', this.tagService.list().pipe(map((tags) => tags.length)), 'tag');
   }
 
-  private loadStat(label: string, request: Observable<unknown[]>, resourceName: string): void {
+  private loadStat(label: string, request: Observable<number>, resourceName: string): void {
     request.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-      next: (result) => this.updateStat(label, result.length),
+      next: (count) => this.updateStat(label, count),
       error: (err: HttpErrorResponse) =>
         this.notify.error(extractErrorMessage(err, `Unable to load ${resourceName} count.`)),
     });

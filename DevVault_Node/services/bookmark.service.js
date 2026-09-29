@@ -1,4 +1,4 @@
-import Bookmark from '../models/Bookmark.js';
+import Bookmark, { BOOKMARK_SORTS, BOOKMARK_COLLATION } from '../models/Bookmark.js';
 import Folder from '../models/Folder.js';
 import Tag from '../models/Tag.js';
 import { ApiError } from '../utils/ApiError.js';
@@ -54,8 +54,10 @@ export const createBookmark = async (userId, payload) => {
   return bookmark.toJSON();
 };
 
+const escapeRegex = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
 export const listBookmarks = async (userId, filters) => {
-  const { search, favorite, archived, type, tag, sortBy = 'createdAt', sortOrder = 'desc', page, limit } = filters;
+  const { search, favorite, archived, type, folder, tags, sort = 'newest', page = 1, limit = 12 } = filters;
 
   const query = { user: userId };
 
@@ -69,41 +71,46 @@ export const listBookmarks = async (userId, filters) => {
     query.type = type;
   }
 
-  if (tag) {
-    query.tags = tag;
+  if (folder) {
+    query.folder = folder;
   }
 
-  if (search) {
-    const regex = new RegExp(search.trim(), 'i');
-    query.$or = [{ title: regex }, { description: regex }, { url: regex }];
+  // Multiple tags narrow the result: a bookmark must carry every selected tag.
+  if (tags) {
+    query.tags = { $all: String(tags).split(',') };
   }
 
-  const sort = { [sortBy]: sortOrder === 'asc' ? 1 : -1 };
-
-  const total = await Bookmark.countDocuments(query);
-
-  const pageNumber = page !== undefined ? Number(page) : undefined;
-  const pageSize = limit !== undefined ? Number(limit) : undefined;
-  const isPaginated = pageNumber !== undefined || pageSize !== undefined;
-
-  let cursor = Bookmark.find(query).sort(sort).populate([FOLDER_POPULATE, TAG_POPULATE]);
-
-  let pagination = { page: 1, limit: total, total, totalPages: total > 0 ? 1 : 0 };
-
-  if (isPaginated) {
-    const resolvedPage = pageNumber ?? 1;
-    const resolvedLimit = pageSize ?? 20;
-    cursor = cursor.skip((resolvedPage - 1) * resolvedLimit).limit(resolvedLimit);
-    pagination = {
-      page: resolvedPage,
-      limit: resolvedLimit,
-      total,
-      totalPages: Math.max(Math.ceil(total / resolvedLimit), 1),
-    };
+  const term = search?.trim();
+  if (term) {
+    // ponytail: unanchored regex scans the user's bookmarks; move to a $text/Atlas Search index if per-user volume grows large.
+    const regex = new RegExp(escapeRegex(term), 'i');
+    const matchingTagIds = await Tag.find({ user: userId, name: regex }).distinct('_id');
+    query.$or = [{ title: regex }, { description: regex }, { url: regex }, { tags: { $in: matchingTagIds } }];
   }
 
-  const bookmarks = await cursor;
-  return { bookmarks: bookmarks.map((bookmark) => bookmark.toJSON()), pagination };
+  const pageNumber = Number(page);
+  const pageSize = Number(limit);
+
+  // Only title sorts need the case-insensitive collation; applying it to date sorts would stop the
+  // (default-collation) date indexes from serving the sort.
+  const cursor = Bookmark.find(query);
+  if ('title' in BOOKMARK_SORTS[sort]) {
+    cursor.collation(BOOKMARK_COLLATION);
+  }
+
+  const [total, bookmarks] = await Promise.all([
+    Bookmark.countDocuments(query),
+    cursor
+      .sort(BOOKMARK_SORTS[sort])
+      .skip((pageNumber - 1) * pageSize)
+      .limit(pageSize)
+      .populate([FOLDER_POPULATE, TAG_POPULATE]),
+  ]);
+
+  return {
+    bookmarks: bookmarks.map((bookmark) => bookmark.toJSON()),
+    pagination: { page: pageNumber, limit: pageSize, total, totalPages: Math.ceil(total / pageSize) },
+  };
 };
 
 export const getBookmarkById = async (id, userId) => {

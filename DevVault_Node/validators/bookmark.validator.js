@@ -1,5 +1,6 @@
+import mongoose from 'mongoose';
 import { body, param, query } from 'express-validator';
-import { BOOKMARK_TYPES } from '../models/Bookmark.js';
+import { BOOKMARK_TYPES, BOOKMARK_SORTS } from '../models/Bookmark.js';
 import { descriptionValidator } from './shared.validator.js';
 
 const titleValidator = body('title')
@@ -66,13 +67,24 @@ export const updateBookmarkValidator = [
 export const bookmarkIdValidator = [param('id').isMongoId().withMessage('Invalid bookmark id')];
 
 export const listBookmarksValidator = [
-  query('search').optional().trim(),
+  query('search')
+    .optional()
+    .isString()
+    .withMessage('Search must be a single value')
+    .isLength({ max: 100 })
+    .withMessage('Search cannot exceed 100 characters'),
   query('favorite').optional().isBoolean().withMessage('Favorite must be a boolean'),
   query('archived').optional().isBoolean().withMessage('Archived must be a boolean'),
   query('type').optional().isIn(BOOKMARK_TYPES).withMessage(`Type must be one of: ${BOOKMARK_TYPES.join(', ')}`),
-  query('tag').optional().isMongoId().withMessage('Tag must be a valid id'),
-  query('sortBy').optional().isIn(['createdAt', 'title', 'updatedAt']).withMessage('Invalid sort field'),
-  query('sortOrder').optional().isIn(['asc', 'desc']).withMessage('Sort order must be asc or desc'),
+  query('folder').optional().isMongoId().withMessage('Folder must be a valid id'),
+  query('tags')
+    .optional()
+    .custom((value) => String(value).split(',').every((id) => mongoose.isObjectIdOrHexString(id)))
+    .withMessage('Tags must be a comma-separated list of valid ids'),
+  query('sort')
+    .optional()
+    .isIn(Object.keys(BOOKMARK_SORTS))
+    .withMessage(`Sort must be one of: ${Object.keys(BOOKMARK_SORTS).join(', ')}`),
   query('page').optional().isInt({ min: 1 }).withMessage('Page must be a positive integer'),
   query('limit').optional().isInt({ min: 1, max: 100 }).withMessage('Limit must be between 1 and 100'),
 ];

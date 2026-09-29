@@ -2,6 +2,19 @@ import mongoose from 'mongoose';
 
 export const BOOKMARK_TYPES = ['article', 'video', 'documentation', 'repository', 'tool', 'other'];
 
+// Titles repeat, so their sorts tie-break on _id to keep pagination stable; ms timestamps don't need one.
+export const BOOKMARK_SORTS = {
+  newest: { createdAt: -1 },
+  oldest: { createdAt: 1 },
+  az: { title: 1, _id: 1 },
+  za: { title: -1, _id: -1 },
+  updated: { updatedAt: -1 },
+};
+
+// List queries run with this collation so A–Z sorting ignores case; the title
+// index must share it to be usable for that sort.
+export const BOOKMARK_COLLATION = { locale: 'en' };
+
 const bookmarkSchema = new mongoose.Schema(
   {
     title: {
@@ -56,6 +69,8 @@ bookmarkSchema.index({ user: 1, createdAt: -1 });
 bookmarkSchema.index({ user: 1, favorite: 1 });
 bookmarkSchema.index({ user: 1, folder: 1 });
 bookmarkSchema.index({ user: 1, tags: 1 });
+bookmarkSchema.index({ user: 1, updatedAt: -1 });
+bookmarkSchema.index({ user: 1, title: 1, _id: 1 }, { collation: BOOKMARK_COLLATION });
 
 bookmarkSchema.set('toJSON', {
   transform: (_doc, ret) => {
