@@ -1,0 +1,50 @@
+<h2 mat-dialog-title class="!m-0 text-lg font-semibold text-gray-900">
+  {{ isEditMode ? 'Edit Tag' : 'New Tag' }}
+</h2>
+
+<form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+  <mat-dialog-content class="!mt-2 w-full sm:w-[400px]">
+    <div class="space-y-4 pt-1">
+      <div>
+        <label for="name" class="block text-sm font-medium text-gray-700">Tag Name</label>
+        <input
+          id="name"
+          type="text"
+          formControlName="name"
+          maxlength="30"
+          placeholder="e.g. Angular"
+          class="mt-1.5 form-input"
+        />
+        @if (form.controls.name.hasError('required') && form.controls.name.touched) {
+          <p class="mt-1 text-xs text-red-600">Tag name is required</p>
+        }
+        @if (form.controls.name.hasError('maxlength') && form.controls.name.touched) {
+          <p class="mt-1 text-xs text-red-600">Tag name cannot exceed 30 characters</p>
+        }
+      </div>
+
+      <div>
+        <span class="block text-sm font-medium text-gray-700">Color</span>
+        <div class="mt-2">
+          <app-color-picker [colors]="colors" [selected]="form.controls.color.value" (colorSelected)="selectColor($event)" />
+        </div>
+      </div>
+    </div>
+  </mat-dialog-content>
+
+  <mat-dialog-actions class="mr-4 flex justify-end gap-2">
+    <button
+      type="button"
+      (click)="cancel()"
+      class="btn-secondary"
+    >
+      Cancel
+    </button>
+    <button
+      type="submit"
+      class="btn-primary"
+    >
+      {{ isEditMode ? 'Save Changes' : 'Create Tag' }}
+    </button>
+  </mat-dialog-actions>
+</form>

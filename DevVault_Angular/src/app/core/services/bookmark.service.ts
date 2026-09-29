@@ -4,24 +4,25 @@ import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 import { ApiSuccessResponse } from '../models/api-response.model';
-import { Bookmark, BookmarkPayload, BookmarkQueryParams } from '../models/bookmark.model';
+import { Bookmark, BookmarkPage, BookmarkPayload, BookmarkQueryParams } from '../models/bookmark.model';
 
 @Injectable({ providedIn: 'root' })
 export class BookmarkService {
   private readonly http = inject(HttpClient);
   private readonly apiUrl = `${environment.apiUrl}/bookmarks`;
 
-  list(params: BookmarkQueryParams = {}): Observable<Bookmark[]> {
+  list(params: BookmarkQueryParams = {}): Observable<BookmarkPage> {
     let httpParams = new HttpParams();
     for (const [key, value] of Object.entries(params)) {
-      if (value !== undefined && value !== null && value !== '') {
-        httpParams = httpParams.set(key, String(value));
+      const serialized = Array.isArray(value) ? value.join(',') : value;
+      if (serialized !== undefined && serialized !== null && serialized !== '') {
+        httpParams = httpParams.set(key, String(serialized));
       }
     }
 
     return this.http
-      .get<ApiSuccessResponse<{ bookmarks: Bookmark[] }>>(this.apiUrl, { params: httpParams })
-      .pipe(map((res) => res.data.bookmarks));
+      .get<ApiSuccessResponse<BookmarkPage>>(this.apiUrl, { params: httpParams })
+      .pipe(map((res) => res.data));
   }
 
   create(payload: BookmarkPayload): Observable<Bookmark> {

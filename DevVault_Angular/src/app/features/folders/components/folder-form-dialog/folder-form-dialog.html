@@ -1,0 +1,85 @@
+<h2 mat-dialog-title class="!m-0 text-lg font-semibold text-gray-900">
+  {{ isEditMode ? 'Edit Folder' : 'New Folder' }}
+</h2>
+
+<form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+  <mat-dialog-content class="!mt-2 w-full sm:w-[440px]">
+    <div class="space-y-4 pt-1">
+      <div>
+        <label for="name" class="block text-sm font-medium text-gray-700">Folder Name</label>
+        <input
+          id="name"
+          type="text"
+          formControlName="name"
+          maxlength="50"
+          placeholder="e.g. Frontend Resources"
+          class="mt-1.5 form-input"
+        />
+        @if (form.controls.name.hasError('required') && form.controls.name.touched) {
+          <p class="mt-1 text-xs text-red-600">Folder name is required</p>
+        }
+        @if (form.controls.name.hasError('maxlength') && form.controls.name.touched) {
+          <p class="mt-1 text-xs text-red-600">Folder name cannot exceed 50 characters</p>
+        }
+      </div>
+
+      <div>
+        <label for="description" class="block text-sm font-medium text-gray-700">Description</label>
+        <textarea
+          id="description"
+          formControlName="description"
+          rows="3"
+          placeholder="Optional notes about this folder"
+          class="mt-1.5 form-input resize-none"
+        ></textarea>
+        @if (form.controls.description.hasError('maxlength') && form.controls.description.touched) {
+          <p class="mt-1 text-xs text-red-600">Description cannot exceed 500 characters</p>
+        }
+      </div>
+
+      <div>
+        <span class="block text-sm font-medium text-gray-700">Color</span>
+        <div class="mt-2">
+          <app-color-picker [colors]="colors" [selected]="form.controls.color.value" (colorSelected)="selectColor($event)" />
+        </div>
+      </div>
+
+      <div>
+        <span class="block text-sm font-medium text-gray-700">Icon</span>
+        <div class="mt-2 flex flex-wrap gap-2">
+          @for (icon of icons; track icon) {
+            <button
+              type="button"
+              (click)="selectIcon(icon)"
+              [attr.aria-label]="'Select icon ' + icon"
+              [attr.aria-pressed]="form.controls.icon.value === icon"
+              class="flex h-9 w-9 items-center justify-center rounded-lg border text-gray-600 transition hover:bg-gray-50"
+              [class.border-blue-500]="form.controls.icon.value === icon"
+              [class.bg-blue-50]="form.controls.icon.value === icon"
+              [class.text-blue-600]="form.controls.icon.value === icon"
+              [class.border-gray-200]="form.controls.icon.value !== icon"
+            >
+              <mat-icon class="!text-[19px]">{{ icon }}</mat-icon>
+            </button>
+          }
+        </div>
+      </div>
+    </div>
+  </mat-dialog-content>
+
+  <mat-dialog-actions class="mr-4 flex justify-end gap-2">
+    <button
+      type="button"
+      (click)="cancel()"
+      class="btn-secondary"
+    >
+      Cancel
+    </button>
+    <button
+      type="submit"
+      class="btn-primary"
+    >
+      {{ isEditMode ? 'Save Changes' : 'Create Folder' }}
+    </button>
+  </mat-dialog-actions>
+</form>

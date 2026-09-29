@@ -5,7 +5,12 @@ import mongoose from 'mongoose';
 // servers on Windows and falls back to 127.0.0.1, which breaks the SRV
 // lookup that mongodb+srv:// URIs depend on. Pointing it at public resolvers
 // avoids that failure mode without requiring any system config changes.
-dns.setServers(['8.8.8.8', '1.1.1.1']);
+// Scoped to Windows only so it doesn't override resolver config in
+// environments that rely on internal/VPC DNS (Docker, Kubernetes, private
+// Atlas endpoints).
+if (process.platform === 'win32') {
+  dns.setServers(['8.8.8.8', '1.1.1.1']);
+}
 
 const connectDB = async () => {
   try {

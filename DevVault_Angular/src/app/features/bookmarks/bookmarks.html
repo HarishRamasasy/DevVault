@@ -14,63 +14,151 @@
     </button>
   </div>
 
-  <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-    <div class="relative w-full sm:max-w-xs">
-      <mat-icon class="pointer-events-none absolute left-3 top-1/2 !text-[18px] -translate-y-1/2 text-gray-400">
-        search
-      </mat-icon>
-      <input
-        #searchInput
-        type="text"
-        [value]="searchInputValue()"
-        (input)="onSearchInput(searchInput.value)"
-        placeholder="Search bookmarks..."
-        class="w-full rounded-lg border border-gray-200 bg-white py-2 pl-9 pr-3 text-sm text-gray-700 placeholder:text-gray-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
-      />
-    </div>
+  <div class="space-y-3">
+    <button
+      type="button"
+      (click)="filtersOpen.set(!filtersOpen())"
+      [attr.aria-expanded]="filtersOpen()"
+      aria-controls="bookmark-filters"
+      class="filter-btn w-full justify-center sm:hidden"
+      [class.filter-btn-active]="hasFilters()"
+    >
+      <mat-icon class="!text-[18px]">tune</mat-icon>
+      Filters
+    </button>
 
-    <div class="flex items-center gap-2">
+    <div
+      id="bookmark-filters"
+      class="flex-wrap items-center gap-2 sm:flex"
+      [class.hidden]="!filtersOpen()"
+      [class.flex]="filtersOpen()"
+    >
       <button
         type="button"
-        (click)="favoritesOnly.set(!favoritesOnly())"
-        [class]="
-          favoritesOnly()
-            ? 'flex items-center gap-1.5 rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-sm font-medium text-blue-600 transition'
-            : 'flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-600 transition hover:bg-gray-50'
-        "
+        [matMenuTriggerFor]="favoriteMenu"
+        class="filter-btn"
+        [class.filter-btn-active]="query().favorite !== undefined"
       >
-        <mat-icon class="!text-[18px]">{{ favoritesOnly() ? 'star' : 'star_border' }}</mat-icon>
-        Favorites
+        <mat-icon class="!text-[18px]">{{ query().favorite === undefined ? 'star_border' : 'star' }}</mat-icon>
+        {{ query().favorite === undefined ? 'All' : query().favorite ? 'Favorites' : 'Not favorites' }}
       </button>
+      <mat-menu #favoriteMenu="matMenu">
+        <button mat-menu-item (click)="setFavorite(null)">All</button>
+        <button mat-menu-item (click)="setFavorite(true)">Favorites</button>
+        <button mat-menu-item (click)="setFavorite(false)">Not favorites</button>
+      </mat-menu>
+
+      <button type="button" [matMenuTriggerFor]="folderMenu" class="filter-btn" [class.filter-btn-active]="query().folder">
+        @if (selectedFolder(); as folder) {
+          <span class="h-2 w-2 shrink-0 rounded-full" [style.background]="folder.color"></span>
+          {{ folder.name }}
+        } @else {
+          <mat-icon class="!text-[18px]">folder</mat-icon>
+          {{ query().folder ? 'Folder' : 'All folders' }}
+        }
+      </button>
+      <mat-menu #folderMenu="matMenu">
+        <button mat-menu-item (click)="setFolder(null)">All folders</button>
+        @for (folder of folders(); track folder._id) {
+          <button mat-menu-item (click)="setFolder(folder._id)">
+            <span class="flex items-center gap-2">
+              <span class="h-2 w-2 shrink-0 rounded-full" [style.background]="folder.color"></span>
+              {{ folder.name }}
+            </span>
+          </button>
+        }
+        @if (!folders().length) {
+          <button mat-menu-item disabled>No folders yet</button>
+        }
+      </mat-menu>
 
       <button
         type="button"
-        [matMenuTriggerFor]="sortMenu"
-        class="flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-600 transition hover:bg-gray-50"
+        [matMenuTriggerFor]="tagMenu"
+        class="filter-btn"
+        [class.filter-btn-active]="selectedTagIds().size"
       >
+        <mat-icon class="!text-[18px]">label</mat-icon>
+        {{ selectedTagIds().size ? 'Tags (' + selectedTagIds().size + ')' : 'All tags' }}
+      </button>
+      <mat-menu #tagMenu="matMenu">
+        <p class="px-4 pb-1 pt-2 text-xs text-gray-400">Shows bookmarks with all selected tags</p>
+        @for (tag of tags(); track tag._id) {
+          <button mat-menu-item (click)="$event.stopPropagation(); toggleTag(tag._id)">
+            <span class="flex items-center gap-2">
+              <mat-icon class="!mr-0 !text-[18px]">
+                {{ selectedTagIds().has(tag._id) ? 'check_box' : 'check_box_outline_blank' }}
+              </mat-icon>
+              <span class="h-2 w-2 shrink-0 rounded-full" [style.background]="tag.color"></span>
+              {{ tag.name }}
+            </span>
+          </button>
+        }
+        @if (!tags().length) {
+          <button mat-menu-item disabled>No tags yet</button>
+        }
+        @if (selectedTagIds().size) {
+          <button mat-menu-item (click)="clearTags()">Clear tags</button>
+        }
+      </mat-menu>
+
+      <button type="button" [matMenuTriggerFor]="typeMenu" class="filter-btn" [class.filter-btn-active]="query().type">
+        <mat-icon class="!text-[18px]">category</mat-icon>
+        {{ selectedTypeLabel() ?? 'All types' }}
+      </button>
+      <mat-menu #typeMenu="matMenu">
+        <button mat-menu-item (click)="setType(null)">All types</button>
+        @for (option of bookmarkTypes; track option.value) {
+          <button mat-menu-item (click)="setType(option.value)">{{ option.label }}</button>
+        }
+      </mat-menu>
+
+      <button type="button" [matMenuTriggerFor]="sortMenu" class="filter-btn">
         <mat-icon class="!text-[18px]">sort</mat-icon>
-        Sort
+        {{ sortLabel() }}
       </button>
       <mat-menu #sortMenu="matMenu">
-        <button mat-menu-item (click)="setSort('createdAt', 'desc')">Newest first</button>
-        <button mat-menu-item (click)="setSort('createdAt', 'asc')">Oldest first</button>
-        <button mat-menu-item (click)="setSort('title', 'asc')">Title (A–Z)</button>
-        <button mat-menu-item (click)="setSort('title', 'desc')">Title (Z–A)</button>
+        @for (option of sortOptions; track option.value) {
+          <button mat-menu-item (click)="setSort(option.value)">{{ option.label }}</button>
+        }
       </mat-menu>
+
+      @if (canClear()) {
+        <button type="button" (click)="clearFilters()" class="btn-secondary flex items-center gap-1">
+          <mat-icon class="!text-[18px]">filter_alt_off</mat-icon>
+          Clear Filters
+        </button>
+      }
     </div>
   </div>
 
+  @if (pagination(); as page) {
+    @if (page.total) {
+      <p class="text-sm text-gray-500" aria-live="polite">
+        <span class="font-medium text-gray-900">{{ page.total }} {{ page.total === 1 ? 'bookmark' : 'bookmarks' }} found</span>
+        @if (query().search) {
+          · Results for: <span class="font-medium text-gray-900">{{ query().search }}</span>
+        }
+      </p>
+    }
+  }
+
   @if (error()) {
-    <div class="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700" role="alert">
+    <div class="flex items-center justify-between gap-3 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700" role="alert">
       {{ error() }}
+      <button type="button" (click)="reload()" class="font-semibold hover:underline">Retry</button>
     </div>
   }
 
-  @if (loading()) {
-    <app-bookmark-skeleton [count]="6" />
-  } @else if (filteredBookmarks().length) {
-    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-      @for (bookmark of filteredBookmarks(); track bookmark._id) {
+  @if (loading() && !bookmarks().length) {
+    <app-card-skeleton variant="bookmark" [count]="6" />
+  } @else if (bookmarks().length) {
+    <div
+      class="grid grid-cols-1 gap-4 transition-opacity sm:grid-cols-2 lg:grid-cols-3"
+      [class.opacity-60]="loading()"
+      [attr.aria-busy]="loading()"
+    >
+      @for (bookmark of bookmarks(); track bookmark._id) {
         <app-bookmark-card
           [bookmark]="bookmark"
           [favoritePending]="pendingFavoriteId() === bookmark._id"
@@ -80,16 +168,49 @@
         />
       }
     </div>
-  } @else if (bookmarks().length) {
+
+    @if (pagination(); as page) {
+      @if (page.totalPages > 1) {
+        <nav class="flex items-center justify-center gap-3" aria-label="Pagination">
+          <button type="button" class="filter-btn" [disabled]="page.page <= 1 || loading()" (click)="goToPage(page.page - 1)">
+            <mat-icon class="!text-[18px]">chevron_left</mat-icon>
+            Previous
+          </button>
+          <span class="text-sm text-gray-500">Page {{ page.page }} of {{ page.totalPages }}</span>
+          <button
+            type="button"
+            class="filter-btn"
+            [disabled]="page.page >= page.totalPages || loading()"
+            (click)="goToPage(page.page + 1)"
+          >
+            Next
+            <mat-icon class="!text-[18px]">chevron_right</mat-icon>
+          </button>
+        </nav>
+      }
+    }
+  } @else if (error()) {
+    <!-- The error banner above already explains why nothing is shown. -->
+  } @else if (query().search) {
     <app-empty-state
       icon="search_off"
-      title="No matching bookmarks"
-      message="Try a different search term or clear your filters."
+      title="No bookmarks found."
+      [message]="'Nothing matches “' + query().search + '”. Try a different search term.'"
+      actionLabel="Clear Filters"
+      (action)="clearFilters()"
+    />
+  } @else if (hasFilters()) {
+    <app-empty-state
+      icon="filter_alt_off"
+      title="No bookmarks match your filters."
+      message="Try removing a filter to see more bookmarks."
+      actionLabel="Clear Filters"
+      (action)="clearFilters()"
     />
   } @else {
     <app-empty-state
       icon="bookmark_border"
-      title="No bookmarks yet"
+      title="No bookmarks yet."
       message="Save your first link to start building your resource library."
       actionLabel="Add Bookmark"
       (action)="openCreateDialog()"

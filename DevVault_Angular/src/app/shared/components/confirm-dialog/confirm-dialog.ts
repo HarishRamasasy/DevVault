@@ -15,7 +15,6 @@ export interface ConfirmDialogData {
   imports: [MatDialogModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './confirm-dialog.html',
-  styleUrl: './confirm-dialog.css',
 })
 export class ConfirmDialog {
   private readonly dialogRef = inject(MatDialogRef<ConfirmDialog, boolean>);

@@ -7,7 +7,6 @@ import { MatIconModule } from '@angular/material/icon';
   imports: [MatIconModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './empty-state.html',
-  styleUrl: './empty-state.css',
 })
 export class EmptyState {
   @Input() icon = 'inbox';

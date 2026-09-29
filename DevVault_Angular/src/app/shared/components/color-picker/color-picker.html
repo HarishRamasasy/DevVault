@@ -1,0 +1,18 @@
+<div class="flex flex-wrap gap-2">
+  @for (color of colors; track color) {
+    <button
+      type="button"
+      (click)="colorSelected.emit(color)"
+      [style.background]="color"
+      [attr.aria-label]="'Select color ' + color"
+      [attr.aria-pressed]="selected === color"
+      class="flex h-8 w-8 items-center justify-center rounded-full ring-offset-2 transition"
+      [class.ring-2]="selected === color"
+      [class.ring-gray-900]="selected === color"
+    >
+      @if (selected === color) {
+        <mat-icon class="!text-[16px] text-white">check</mat-icon>
+      }
+    </button>
+  }
+</div>

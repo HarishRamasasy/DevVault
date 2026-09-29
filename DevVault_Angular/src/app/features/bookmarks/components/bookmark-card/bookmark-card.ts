@@ -10,7 +10,6 @@ import { Bookmark, BOOKMARK_TYPES } from '../../../../core/models/bookmark.model
   imports: [MatIconModule, MatMenuModule, DatePipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './bookmark-card.html',
-  styleUrl: './bookmark-card.css',
 })
 export class BookmarkCard {
   @Input({ required: true }) bookmark!: Bookmark;

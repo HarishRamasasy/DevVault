@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
@@ -23,8 +23,8 @@ const NAV_ITEMS: NavItem[] = [
   selector: 'app-sidebar',
   standalone: true,
   imports: [RouterLink, RouterLinkActive, MatIconModule, MatTooltipModule],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './sidebar.html',
-  styleUrl: './sidebar.css',
 })
 export class Sidebar {
   @Input() collapsed = false;

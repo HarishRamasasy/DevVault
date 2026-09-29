@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { ActivatedRouteSnapshot, NavigationEnd, Router, RouterLink } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { filter, map, startWith } from 'rxjs';
@@ -13,8 +13,8 @@ interface Crumb {
   selector: 'app-breadcrumb',
   standalone: true,
   imports: [RouterLink, MatIconModule],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './breadcrumb.html',
-  styleUrl: './breadcrumb.css',
 })
 export class Breadcrumb {
   private readonly router = inject(Router);
