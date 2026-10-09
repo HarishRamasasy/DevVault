@@ -4,7 +4,6 @@ import {
   ElementRef,
   EventEmitter,
   Output,
-  computed,
   inject,
   viewChild,
 } from '@angular/core';
@@ -36,15 +35,7 @@ export class Navbar {
   readonly currentUser = this.authService.currentUser;
   readonly initialSearch = this.urlSearch();
 
-  readonly initials = computed(() => {
-    const name = this.currentUser()?.name ?? '';
-    return name
-      .trim()
-      .split(/\s+/)
-      .slice(0, 2)
-      .map((part) => part.charAt(0).toUpperCase())
-      .join('');
-  });
+  readonly initials = this.authService.initials;
 
   constructor() {
     this.search$.pipe(debounceTime(SEARCH_DEBOUNCE_MS), takeUntilDestroyed()).subscribe((value) => {

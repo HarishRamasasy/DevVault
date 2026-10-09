@@ -1,4 +1,4 @@
-import { inject, Injectable, signal } from '@angular/core';
+import { computed, inject, Injectable, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
@@ -13,8 +13,18 @@ const USER_KEY = 'devvault_user';
 export class AuthService {
   private readonly http = inject(HttpClient);
   private readonly apiUrl = `${environment.apiUrl}/auth`;
+  private readonly usersUrl = `${environment.apiUrl}/users`;
 
   readonly currentUser = signal<User | null>(this.readStoredUser());
+
+  readonly initials = computed(() =>
+    (this.currentUser()?.name ?? '')
+      .trim()
+      .split(/\s+/)
+      .slice(0, 2)
+      .map((part) => part.charAt(0).toUpperCase())
+      .join(''),
+  );
 
   register(name: string, email: string, password: string): Observable<ApiSuccessResponse<AuthPayload>> {
     return this.http.post<ApiSuccessResponse<AuthPayload>>(`${this.apiUrl}/register`, { name, email, password });
@@ -30,6 +40,16 @@ export class AuthService {
     return this.http
       .get<ApiSuccessResponse<{ user: User }>>(`${this.apiUrl}/me`)
       .pipe(tap((res) => this.setUser(res.data.user)));
+  }
+
+  updateProfile(changes: Pick<User, 'name' | 'email'>): Observable<ApiSuccessResponse<{ user: User }>> {
+    return this.http
+      .put<ApiSuccessResponse<{ user: User }>>(`${this.usersUrl}/me`, changes)
+      .pipe(tap((res) => this.setUser(res.data.user)));
+  }
+
+  changePassword(currentPassword: string, newPassword: string): Observable<ApiSuccessResponse<object>> {
+    return this.http.put<ApiSuccessResponse<object>>(`${this.usersUrl}/me/password`, { currentPassword, newPassword });
   }
 
   logout(): void {

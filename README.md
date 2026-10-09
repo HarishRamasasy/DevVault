@@ -1,6 +1,6 @@
 # DevVault
 
-![Status](https://img.shields.io/badge/status-Sprint%201%20Complete-brightgreen)
+![Status](https://img.shields.io/badge/status-Sprint%207%20Complete-brightgreen)
 ![License](https://img.shields.io/badge/license-MIT-blue)
 ![Angular](https://img.shields.io/badge/Angular-22-dd0031)
 ![Node.js](https://img.shields.io/badge/Node.js-%3E%3D18-339933)
@@ -14,20 +14,17 @@ DevVault gives developers a single, secure place to save and structure the tools
 
 ## Current Status
 
-DevVault is currently in **Sprint 1**.
+DevVault has completed **Sprint 7**.
 
 **Completed**
 
 - ✅ Authentication Module
-
-**Upcoming**
-
-- Dashboard
-- Bookmarks
-- Folders
-- Tags
-- Search
-- Favorites
+- ✅ Dashboard Shell & Layout
+- ✅ Bookmarks
+- ✅ Folders
+- ✅ Tags
+- ✅ Global Search & Filters
+- ✅ User Profile & Settings
 
 ---
 
@@ -46,6 +43,13 @@ DevVault is currently in **Sprint 1**.
 - Logout
 - Form Validation (client-side and server-side)
 - Error Handling (consistent API error responses)
+
+### User Profile & Settings (Sprint 7)
+
+- **Profile page** (`/profile`) — avatar initials, name, email, member-since date, and account information (registered email, created / last-updated dates). Reachable from the navbar user menu.
+- **Edit profile** — update name and email with validation; Save is disabled while the form is invalid, unchanged, or saving. The navbar updates immediately, no re-login needed. A changed email becomes the sign-in email.
+- **Change password** (`/settings/password`) — current / new / confirm fields with show-hide toggles. The backend verifies the current password with bcrypt, enforces 8+ characters, rejects reusing the current password, and hashes the new one. Fields clear on success.
+- **Settings page** (`/settings`) — links to Profile and Change Password, plus a *Compact sidebar* preference (icon-only sidebar on desktop) stored in `localStorage` on the current device.
 
 ---
 
@@ -209,6 +213,13 @@ Unauthenticated users are redirected away from protected routes to the login pag
 | `POST` | `/api/auth/register` | Register a new user | No |
 | `POST` | `/api/auth/login` | Authenticate a user and receive a JWT | No |
 | `GET` | `/api/auth/me` | Get the currently authenticated user | Yes |
+| `GET` | `/api/users/me` | Get the current user's profile | Yes |
+| `PUT` | `/api/users/me` | Update the current user's `name` and/or `email` (other fields are ignored) | Yes |
+| `PUT` | `/api/users/me/password` | Change password — body: `currentPassword`, `newPassword` | Yes |
+
+Profile endpoints always act on the user identified by the JWT; no user ID is accepted from the request. `PUT /api/users/me` returns `409` if the email is already in use. `PUT /api/users/me/password` returns `400` for an incorrect current password, a new password shorter than 8 characters, or a new password identical to the current one.
+
+To re-run the profile/password API checks: `cd DevVault_Node && npm run test:users`. This starts the server on port 5055 against the configured `MONGO_URI`, creates two temporary `@example.test` users, and deletes them afterwards.
 
 All responses follow a consistent structure:
 
@@ -251,12 +262,12 @@ _Screenshot coming soon_
 | Sprint | Focus | Status |
 |---|---|---|
 | Sprint 1 | Authentication | ✅ Complete |
-| Sprint 2 | Dashboard Layout | Planned |
-| Sprint 3 | Bookmarks CRUD | Planned |
-| Sprint 4 | Folder Management | Planned |
-| Sprint 5 | Tag Management | Planned |
-| Sprint 6 | Search | Planned |
-| Sprint 7 | Favorites | Planned |
+| Sprint 2 | Dashboard Layout | ✅ Complete |
+| Sprint 3 | Bookmarks CRUD | ✅ Complete |
+| Sprint 4 | Folder Management | ✅ Complete |
+| Sprint 5 | Tag Management | ✅ Complete |
+| Sprint 6 | Search | ✅ Complete |
+| Sprint 7 | User Profile & Settings | ✅ Complete |
 | Sprint 8 | Deployment | Planned |
 
 ---

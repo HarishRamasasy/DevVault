@@ -51,9 +51,20 @@ export const routes: Routes = [
         data: { title: 'Snippets', icon: 'code' },
       },
       {
+        path: 'profile',
+        loadComponent: () => import('./features/profile/profile').then((m) => m.Profile),
+        data: { title: 'Profile' },
+      },
+      {
         path: 'settings',
-        loadComponent: () => import('./shared/components/coming-soon/coming-soon').then((m) => m.ComingSoon),
-        data: { title: 'Settings', icon: 'settings' },
+        loadComponent: () => import('./features/settings/settings').then((m) => m.Settings),
+        data: { title: 'Settings' },
+      },
+      {
+        path: 'settings/password',
+        loadComponent: () =>
+          import('./features/settings/change-password/change-password').then((m) => m.ChangePassword),
+        data: { title: 'Change Password' },
       },
     ],
   },

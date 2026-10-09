@@ -7,6 +7,7 @@ import { MatSidenavModule } from '@angular/material/sidenav';
 import { Sidebar } from './sidebar/sidebar';
 import { Navbar } from './navbar/navbar';
 import { Breadcrumb } from './breadcrumb/breadcrumb';
+import { PreferencesService } from '../core/services/preferences.service';
 
 const MOBILE_QUERY = '(max-width: 767px)';
 const TABLET_QUERY = '(min-width: 768px) and (max-width: 1023px)';
@@ -20,6 +21,7 @@ const TABLET_QUERY = '(min-width: 768px) and (max-width: 1023px)';
 })
 export class Layout {
   private readonly breakpointObserver = inject(BreakpointObserver);
+  private readonly preferences = inject(PreferencesService);
 
   private readonly isMobile = toSignal(
     this.breakpointObserver.observe(MOBILE_QUERY).pipe(map((state) => state.matches)),
@@ -46,7 +48,7 @@ export class Layout {
         this.sidebarCollapsed.set(true);
       } else {
         this.sidenavOpened.set(true);
-        this.sidebarCollapsed.set(false);
+        this.sidebarCollapsed.set(this.preferences.sidebarCollapsed());
       }
     });
   }
