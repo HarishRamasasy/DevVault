@@ -5,6 +5,7 @@ import {
   EventEmitter,
   Output,
   inject,
+  signal,
   viewChild,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -34,19 +35,22 @@ export class Navbar {
 
   readonly currentUser = this.authService.currentUser;
   readonly initialSearch = this.urlSearch();
+  readonly onNotesList = signal(this.router.url.split('?')[0] === '/notes');
 
   readonly initials = this.authService.initials;
 
   constructor() {
     this.search$.pipe(debounceTime(SEARCH_DEBOUNCE_MS), takeUntilDestroyed()).subscribe((value) => {
       const term = value.trim();
-      const onBookmarks = this.router.url.startsWith('/bookmarks');
-      if (!term && !onBookmarks) return;
+      // The Notes list page searches notes; everywhere else the search targets bookmarks.
+      const target = this.onNotesList() ? '/notes' : '/bookmarks';
+      const onTarget = this.router.url.split('?')[0] === target;
+      if (!term && !onTarget) return;
 
-      this.router.navigate(['/bookmarks'], {
+      this.router.navigate([target], {
         queryParams: { search: term || null, page: null },
         queryParamsHandling: 'merge',
-        replaceUrl: onBookmarks,
+        replaceUrl: onTarget,
       });
     });
 
@@ -57,6 +61,7 @@ export class Navbar {
         takeUntilDestroyed(),
       )
       .subscribe(() => {
+        this.onNotesList.set(this.router.url.split('?')[0] === '/notes');
         const input = this.searchInput()?.nativeElement;
         if (input && document.activeElement !== input) {
           input.value = this.urlSearch();

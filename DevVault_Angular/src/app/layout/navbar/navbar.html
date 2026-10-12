@@ -17,7 +17,7 @@
       type="search"
       [value]="initialSearch"
       (input)="onSearchInput(searchInput.value)"
-      placeholder="Search bookmarks..."
+      [placeholder]="onNotesList() ? 'Search notes...' : 'Search bookmarks...'"
       aria-label="Search bookmarks"
       class="w-full rounded-lg border border-gray-200 bg-gray-50 py-2 pl-9 pr-3 text-sm text-gray-700 placeholder:text-gray-400 focus:border-blue-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20"
     />

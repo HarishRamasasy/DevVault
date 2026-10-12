@@ -1,0 +1,77 @@
+<div class="space-y-6">
+  <a routerLink="/notes" class="inline-flex items-center gap-1 text-sm font-medium text-gray-500 hover:text-gray-900">
+    <mat-icon class="!text-[18px]">arrow_back</mat-icon>
+    Back to notes
+  </a>
+
+  @if (loading()) {
+    <div class="space-y-3 rounded-2xl border border-gray-200 bg-white p-6" role="status" aria-label="Loading note">
+      <div class="h-6 w-1/2 animate-pulse rounded bg-gray-200"></div>
+      <div class="h-3 w-1/4 animate-pulse rounded bg-gray-100"></div>
+      <div class="h-3 w-full animate-pulse rounded bg-gray-100"></div>
+      <div class="h-3 w-5/6 animate-pulse rounded bg-gray-100"></div>
+      <div class="h-3 w-2/3 animate-pulse rounded bg-gray-100"></div>
+    </div>
+  } @else if (note(); as note) {
+    <article class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm shadow-gray-100 sm:p-8">
+      <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <h1 class="break-words text-2xl font-bold text-gray-900">{{ note.title }}</h1>
+
+        <div class="flex shrink-0 items-center gap-2">
+          <button
+            type="button"
+            (click)="toggleFavorite(note)"
+            [disabled]="favoritePending()"
+            [attr.aria-label]="note.favorite ? 'Remove from favorites' : 'Add to favorites'"
+            class="flex h-9 w-9 items-center justify-center rounded-lg border border-gray-200 text-gray-400 transition hover:bg-gray-100 disabled:opacity-50"
+            [class.text-amber-500]="note.favorite"
+          >
+            <mat-icon class="!text-[20px]">{{ note.favorite ? 'star' : 'star_border' }}</mat-icon>
+          </button>
+          <button type="button" (click)="edit(note)" class="btn-secondary flex items-center gap-1">
+            <mat-icon class="!text-[18px]">edit</mat-icon>
+            Edit
+          </button>
+          <button
+            type="button"
+            (click)="confirmDelete(note)"
+            class="flex items-center gap-1 rounded-lg border border-red-200 px-4 py-2 text-sm font-medium text-red-600 transition hover:bg-red-50"
+          >
+            <mat-icon class="!text-[18px]">delete</mat-icon>
+            Delete
+          </button>
+        </div>
+      </div>
+
+      <div class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-gray-400">
+        <span>Created {{ note.createdAt | date: 'MMM d, y, h:mm a' }}</span>
+        <span>Updated {{ note.updatedAt | date: 'MMM d, y, h:mm a' }}</span>
+      </div>
+
+      @if (note.folder || note.tags.length) {
+        <div class="mt-4 flex flex-wrap items-center gap-1.5">
+          @if (note.folder) {
+            <span class="inline-flex items-center gap-1.5 rounded-md bg-gray-50 px-2 py-1 text-xs font-medium text-gray-600">
+              <mat-icon class="!text-[14px]">folder</mat-icon>
+              {{ note.folder.name }}
+            </span>
+          }
+          @for (tag of note.tags; track tag._id) {
+            <span class="inline-flex items-center gap-1 rounded-md bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-600">
+              <span class="h-1.5 w-1.5 shrink-0 rounded-full" [style.background]="tag.color"></span>
+              {{ tag.name }}
+            </span>
+          }
+        </div>
+      }
+
+      <!-- Interpolation escapes HTML; pre-wrap keeps the author's line breaks and indentation. -->
+      <div class="mt-6 whitespace-pre-wrap break-words border-t border-gray-100 pt-6 text-sm leading-relaxed text-gray-800">{{ note.content }}</div>
+    </article>
+  } @else {
+    <div class="flex items-center justify-between gap-3 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700" role="alert">
+      {{ error() }}
+      <a routerLink="/notes" class="font-semibold hover:underline">Back to notes</a>
+    </div>
+  }
+</div>

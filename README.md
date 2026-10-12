@@ -14,7 +14,7 @@ DevVault gives developers a single, secure place to save and structure the tools
 
 ## Current Status
 
-DevVault has completed **Sprint 7**.
+DevVault has completed **Sprint 8**.
 
 **Completed**
 
@@ -25,6 +25,7 @@ DevVault has completed **Sprint 7**.
 - ✅ Tags
 - ✅ Global Search & Filters
 - ✅ User Profile & Settings
+- ✅ Notes
 
 ---
 
@@ -50,6 +51,15 @@ DevVault has completed **Sprint 7**.
 - **Edit profile** — update name and email with validation; Save is disabled while the form is invalid, unchanged, or saving. The navbar updates immediately, no re-login needed. A changed email becomes the sign-in email.
 - **Change password** (`/settings/password`) — current / new / confirm fields with show-hide toggles. The backend verifies the current password with bcrypt, enforces 8+ characters, rejects reusing the current password, and hashes the new one. Fields clear on success.
 - **Settings page** (`/settings`) — links to Profile and Change Password, plus a *Compact sidebar* preference (icon-only sidebar on desktop) stored in `localStorage` on the current device.
+
+### Notes (Sprint 8)
+
+- **Notes page** (`/notes`) — card grid showing title, a 3-line content preview, folder, tags, favorite star and last-updated date. Create, open, edit, delete (with confirmation) and favorite from each card. Loading, empty, no-results and error states.
+- **Create / edit dialog** — title (≤150 chars) and multiline content (≤20,000 chars) with validation, plus the same searchable folder picker and multi-select tag chips used by bookmarks (shared `FolderTagPicker` component). The dialog saves itself, shows *Saving...*, ignores duplicate submits and stays open on errors.
+- **Note details** (`/notes/:id`) — full title and content (line breaks and indentation preserved, rendered as plain text — never as HTML), folder, tags, created/updated dates, and favorite/edit/delete actions.
+- **Search, filters and sorting** — the navbar search box searches notes while on `/notes` (title, content and tag names, debounced). Filter by favorites, folder and tags (all selected tags must match); sort newest, oldest, A–Z, Z–A or recently updated; server-side pagination. All state lives in the URL, and *Clear Filters* resets it.
+- **Folder / tag integration** — a note has zero or one folder and any number of tags, all checked server-side to belong to the current user. Deleting a folder clears it from notes; deleting a tag removes it from notes. Notes themselves are never deleted.
+- **Dashboard** — the Notes count comes from the API.
 
 ---
 
@@ -221,6 +231,21 @@ Profile endpoints always act on the user identified by the JWT; no user ID is ac
 
 To re-run the profile/password API checks: `cd DevVault_Node && npm run test:users`. This starts the server on port 5055 against the configured `MONGO_URI`, creates two temporary `@example.test` users, and deletes them afterwards.
 
+### Notes endpoints
+
+| Method | Endpoint | Description | Auth Required |
+|---|---|---|---|
+| `POST` | `/api/notes` | Create a note — body: `title`, `content`, optional `folder`, `tags[]` | Yes |
+| `GET` | `/api/notes` | List the current user's notes — query: `search`, `folder`, `tags` (comma-separated ids), `favorite`, `sort` (`newest`, `oldest`, `az`, `za`, `updated`), `page`, `limit` (≤100) | Yes |
+| `GET` | `/api/notes/:id` | Get one note | Yes |
+| `PUT` | `/api/notes/:id` | Update `title`, `content`, `folder`, `tags` (partial updates allowed) | Yes |
+| `DELETE` | `/api/notes/:id` | Delete a note | Yes |
+| `PATCH` | `/api/notes/:id/favorite` | Toggle the note's favorite flag | Yes |
+
+Only `title`, `content`, `folder`, `tags` and `favorite` are read from the body; `user`, `_id` and timestamps are ignored. Invalid ids or payloads return `400`, another user's note returns `403`, and a missing note — or a `folder`/`tag` that doesn't belong to the user — returns `404`. Note content is stored as plain text.
+
+To re-run the notes API checks: `cd DevVault_Node && npm run test:notes`. This uses port 5056, otherwise works like `test:users`, and also cleans up the test users' notes, folders, tags and bookmarks. Either script can run against a local MongoDB by setting `MONGO_URI` in the shell first (dotenv doesn't override an existing variable).
+
 All responses follow a consistent structure:
 
 ```json
@@ -268,7 +293,8 @@ _Screenshot coming soon_
 | Sprint 5 | Tag Management | ✅ Complete |
 | Sprint 6 | Search | ✅ Complete |
 | Sprint 7 | User Profile & Settings | ✅ Complete |
-| Sprint 8 | Deployment | Planned |
+| Sprint 8 | Notes Management | ✅ Complete |
+| Sprint 9 | Code Snippets | Planned |
 
 ---
 

@@ -42,8 +42,13 @@ export const routes: Routes = [
       },
       {
         path: 'notes',
-        loadComponent: () => import('./shared/components/coming-soon/coming-soon').then((m) => m.ComingSoon),
-        data: { title: 'Notes', icon: 'description' },
+        loadComponent: () => import('./features/notes/notes').then((m) => m.Notes),
+        data: { title: 'Notes' },
+      },
+      {
+        path: 'notes/:id',
+        loadComponent: () => import('./features/notes/note-detail/note-detail').then((m) => m.NoteDetail),
+        data: { title: 'Note' },
       },
       {
         path: 'snippets',

@@ -1,6 +1,6 @@
 @switch (variant) {
   @case ('bookmark') {
-    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3" role="status" aria-label="Loading bookmarks">
+    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3" role="status" [attr.aria-label]="'Loading ' + itemLabel">
       @for (i of placeholders; track i) {
         <div
           class="flex h-40 flex-col justify-between rounded-2xl border border-gray-200 bg-white p-5 shadow-sm shadow-gray-100"
