@@ -14,7 +14,7 @@ DevVault gives developers a single, secure place to save and structure the tools
 
 ## Current Status
 
-DevVault has completed **Sprint 8**.
+DevVault has completed **Sprint 9**.
 
 **Completed**
 
@@ -26,6 +26,7 @@ DevVault has completed **Sprint 8**.
 - ✅ Global Search & Filters
 - ✅ User Profile & Settings
 - ✅ Notes
+- ✅ Code Snippets
 
 ---
 
@@ -61,6 +62,19 @@ DevVault has completed **Sprint 8**.
 - **Folder / tag integration** — a note has zero or one folder and any number of tags, all checked server-side to belong to the current user. Deleting a folder clears it from notes; deleting a tag removes it from notes. Notes themselves are never deleted.
 - **Dashboard** — the Notes count comes from the API.
 
+### Code Snippets (Sprint 9)
+
+- **Snippets page** (`/snippets`) — card grid showing title, description preview, language, a highlighted 8-line code preview, folder, tags, favorite star and last-updated date. Create, open, edit, copy, delete (with confirmation) and favorite from each card. Loading, empty, no-results and error states.
+- **Create / edit dialog** — title (≤150 chars), language dropdown, optional description (≤500 chars) and a monospace code editor (≤50,000 chars, no line wrapping, horizontal scroll). Code is saved exactly as typed: indentation, tabs and line breaks are never trimmed. Uses the shared `FolderTagPicker` for folder and tag chips.
+- **Snippet details** (`/snippets/:id`) — title, description, language, full syntax-highlighted code, folder, tags, created/updated dates, and copy/favorite/edit/delete actions.
+- **Syntax highlighting** — [highlight.js](https://highlightjs.org/) core build with only the 24 offered languages registered, loaded in the lazy snippets chunk. Its output escapes all code text, so `<script>` or HTML in a snippet shows as text and never runs. Languages without a grammar (`plaintext`, or an unexpected value) fall back to plain escaped text.
+- **Copy code** — uses the browser Clipboard API and copies the full, exact source (even from the truncated card preview), with success/failure snackbars. Clipboard access needs HTTPS or `localhost`.
+- **Search, filters and sorting** — the navbar search box searches snippets while on `/snippets` (title, description, code, language and tag names, debounced). Filter by language, favorites, folder and tags; same sort options, pagination and URL-driven state as Notes.
+- **Folder / tag integration** — same rules as Notes: ownership checked server-side, deleting a folder clears it from snippets, deleting a tag removes it from snippets, and snippets themselves are never deleted.
+- **Dashboard** — the Snippets count comes from the API.
+
+**Supported languages:** `plaintext`, `javascript`, `typescript`, `html`, `css`, `scss`, `json`, `python`, `java`, `csharp`, `cpp`, `c`, `go`, `rust`, `php`, `ruby`, `kotlin`, `swift`, `sql`, `bash`, `powershell`, `yaml`, `xml`, `markdown`, `dockerfile`. The backend rejects any other value with `400`. To add one, update `SNIPPET_LANGUAGES` in both `DevVault_Node/models/Snippet.js` and `DevVault_Angular/src/app/core/models/snippet.model.ts`, and register its grammar in `shared/components/code-block/code-block.ts`.
+
 ---
 
 ## Tech Stack
@@ -75,6 +89,7 @@ DevVault has completed **Sprint 8**.
 | HttpClient | HTTP communication with the backend |
 | Tailwind CSS | Utility-first styling |
 | Angular Material | Icons and Material component primitives |
+| highlight.js | Read-only syntax highlighting for code snippets |
 
 **Backend**
 
@@ -246,6 +261,21 @@ Only `title`, `content`, `folder`, `tags` and `favorite` are read from the body;
 
 To re-run the notes API checks: `cd DevVault_Node && npm run test:notes`. This uses port 5056, otherwise works like `test:users`, and also cleans up the test users' notes, folders, tags and bookmarks. Either script can run against a local MongoDB by setting `MONGO_URI` in the shell first (dotenv doesn't override an existing variable).
 
+### Snippets endpoints
+
+| Method | Endpoint | Description | Auth Required |
+|---|---|---|---|
+| `POST` | `/api/snippets` | Create a snippet — body: `title`, `code`, `language`, optional `description`, `folder`, `tags[]` | Yes |
+| `GET` | `/api/snippets` | List the current user's snippets — query: `search`, `language`, `folder`, `tags` (comma-separated ids), `favorite`, `sort` (`newest`, `oldest`, `az`, `za`, `updated`), `page`, `limit` (≤100) | Yes |
+| `GET` | `/api/snippets/:id` | Get one snippet | Yes |
+| `PUT` | `/api/snippets/:id` | Update `title`, `description`, `code`, `language`, `folder`, `tags` (partial updates allowed) | Yes |
+| `DELETE` | `/api/snippets/:id` | Delete a snippet | Yes |
+| `PATCH` | `/api/snippets/:id/favorite` | Toggle the snippet's favorite flag | Yes |
+
+Only the fields above (plus `favorite`) are read from the body; `user`, `_id` and timestamps are ignored. Invalid ids, payloads or languages return `400`; another user's snippet returns `403`; a missing snippet, or a `folder`/`tag` that doesn't belong to the user, returns `404`. Code is stored verbatim as plain text and is never executed.
+
+To re-run the snippets API checks: `cd DevVault_Node && npm run test:snippets` (port 5057, same setup and cleanup as `test:notes`). The frontend `CodeBlock` safe-rendering spec runs with `cd DevVault_Angular && npx ng test --watch=false`.
+
 All responses follow a consistent structure:
 
 ```json
@@ -294,7 +324,7 @@ _Screenshot coming soon_
 | Sprint 6 | Search | ✅ Complete |
 | Sprint 7 | User Profile & Settings | ✅ Complete |
 | Sprint 8 | Notes Management | ✅ Complete |
-| Sprint 9 | Code Snippets | Planned |
+| Sprint 9 | Code Snippets | ✅ Complete |
 
 ---
 

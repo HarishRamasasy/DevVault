@@ -52,8 +52,14 @@ export const routes: Routes = [
       },
       {
         path: 'snippets',
-        loadComponent: () => import('./shared/components/coming-soon/coming-soon').then((m) => m.ComingSoon),
-        data: { title: 'Snippets', icon: 'code' },
+        loadComponent: () => import('./features/snippets/snippets').then((m) => m.Snippets),
+        data: { title: 'Snippets' },
+      },
+      {
+        path: 'snippets/:id',
+        loadComponent: () =>
+          import('./features/snippets/snippet-detail/snippet-detail').then((m) => m.SnippetDetail),
+        data: { title: 'Snippet' },
       },
       {
         path: 'profile',

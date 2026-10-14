@@ -16,6 +16,8 @@ import { Subject, debounceTime, filter } from 'rxjs';
 import { AuthService } from '../../core/services/auth.service';
 
 const SEARCH_DEBOUNCE_MS = 300;
+// List pages that run the navbar search against their own resource; everywhere else it searches bookmarks.
+const SCOPED_SEARCH_PAGES = ['/notes', '/snippets'];
 
 @Component({
   selector: 'app-navbar',
@@ -35,15 +37,14 @@ export class Navbar {
 
   readonly currentUser = this.authService.currentUser;
   readonly initialSearch = this.urlSearch();
-  readonly onNotesList = signal(this.router.url.split('?')[0] === '/notes');
+  readonly scopedPage = signal(this.currentScopedPage());
 
   readonly initials = this.authService.initials;
 
   constructor() {
     this.search$.pipe(debounceTime(SEARCH_DEBOUNCE_MS), takeUntilDestroyed()).subscribe((value) => {
       const term = value.trim();
-      // The Notes list page searches notes; everywhere else the search targets bookmarks.
-      const target = this.onNotesList() ? '/notes' : '/bookmarks';
+      const target = this.scopedPage() ?? '/bookmarks';
       const onTarget = this.router.url.split('?')[0] === target;
       if (!term && !onTarget) return;
 
@@ -61,7 +62,7 @@ export class Navbar {
         takeUntilDestroyed(),
       )
       .subscribe(() => {
-        this.onNotesList.set(this.router.url.split('?')[0] === '/notes');
+        this.scopedPage.set(this.currentScopedPage());
         const input = this.searchInput()?.nativeElement;
         if (input && document.activeElement !== input) {
           input.value = this.urlSearch();
@@ -76,6 +77,11 @@ export class Navbar {
   logout(): void {
     this.authService.logout();
     this.router.navigate(['/auth/login']);
+  }
+
+  private currentScopedPage(): string | null {
+    const path = this.router.url.split('?')[0];
+    return SCOPED_SEARCH_PAGES.includes(path) ? path : null;
   }
 
   private urlSearch(): string {

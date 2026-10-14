@@ -8,6 +8,7 @@ import { BookmarkService } from '../../core/services/bookmark.service';
 import { FolderService } from '../../core/services/folder.service';
 import { TagService } from '../../core/services/tag.service';
 import { NoteService } from '../../core/services/note.service';
+import { SnippetService } from '../../core/services/snippet.service';
 import { NotificationService } from '../../core/services/notification.service';
 import { extractErrorMessage } from '../../core/utils/http-error';
 
@@ -38,6 +39,7 @@ export class Dashboard {
   private readonly folderService = inject(FolderService);
   private readonly tagService = inject(TagService);
   private readonly noteService = inject(NoteService);
+  private readonly snippetService = inject(SnippetService);
   private readonly notify = inject(NotificationService);
   private readonly destroyRef = inject(DestroyRef);
 
@@ -49,6 +51,7 @@ export class Dashboard {
     this.loadStat('Folders', this.folderService.list().pipe(map((folders) => folders.length)), 'folder');
     this.loadStat('Tags', this.tagService.list().pipe(map((tags) => tags.length)), 'tag');
     this.loadStat('Notes', this.noteService.list({ limit: 1 }).pipe(map((res) => res.pagination.total)), 'note');
+    this.loadStat('Snippets', this.snippetService.list({ limit: 1 }).pipe(map((res) => res.pagination.total)), 'snippet');
   }
 
   private loadStat(label: string, request: Observable<number>, resourceName: string): void {

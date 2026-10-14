@@ -1,0 +1,20 @@
+<div class="overflow-hidden rounded-xl bg-[#0d1117] text-[#e6edf3]">
+  <div class="flex items-center justify-between gap-2 border-b border-white/10 px-3 py-1.5">
+    <span class="text-xs font-medium text-gray-400">{{ label() }}</span>
+    <button
+      type="button"
+      (click)="copy()"
+      aria-label="Copy code"
+      class="flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium text-gray-300 transition hover:bg-white/10"
+    >
+      <mat-icon class="!h-4 !w-4 !text-[16px]">content_copy</mat-icon>
+      Copy
+    </button>
+  </div>
+  <!-- No whitespace between <pre>/<code> and the content: it would be rendered as part of the code. -->
+  @if (highlighted(); as html) {
+    <pre class="overflow-x-auto p-4 text-[13px] leading-relaxed"><code class="hljs !bg-transparent !p-0 font-mono" [innerHTML]="html"></code></pre>
+  } @else {
+    <pre class="overflow-x-auto p-4 text-[13px] leading-relaxed"><code class="font-mono">{{ visibleCode() }}</code></pre>
+  }
+</div>
