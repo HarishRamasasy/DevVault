@@ -4,8 +4,8 @@ import {
   ElementRef,
   EventEmitter,
   Output,
-  computed,
   inject,
+  signal,
   viewChild,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -16,6 +16,8 @@ import { Subject, debounceTime, filter } from 'rxjs';
 import { AuthService } from '../../core/services/auth.service';
 
 const SEARCH_DEBOUNCE_MS = 300;
+// List pages that run the navbar search against their own resource; everywhere else it searches bookmarks.
+const SCOPED_SEARCH_PAGES = ['/notes', '/snippets'];
 
 @Component({
   selector: 'app-navbar',
@@ -35,27 +37,21 @@ export class Navbar {
 
   readonly currentUser = this.authService.currentUser;
   readonly initialSearch = this.urlSearch();
+  readonly scopedPage = signal(this.currentScopedPage());
 
-  readonly initials = computed(() => {
-    const name = this.currentUser()?.name ?? '';
-    return name
-      .trim()
-      .split(/\s+/)
-      .slice(0, 2)
-      .map((part) => part.charAt(0).toUpperCase())
-      .join('');
-  });
+  readonly initials = this.authService.initials;
 
   constructor() {
     this.search$.pipe(debounceTime(SEARCH_DEBOUNCE_MS), takeUntilDestroyed()).subscribe((value) => {
       const term = value.trim();
-      const onBookmarks = this.router.url.startsWith('/bookmarks');
-      if (!term && !onBookmarks) return;
+      const target = this.scopedPage() ?? '/bookmarks';
+      const onTarget = this.router.url.split('?')[0] === target;
+      if (!term && !onTarget) return;
 
-      this.router.navigate(['/bookmarks'], {
+      this.router.navigate([target], {
         queryParams: { search: term || null, page: null },
         queryParamsHandling: 'merge',
-        replaceUrl: onBookmarks,
+        replaceUrl: onTarget,
       });
     });
 
@@ -66,6 +62,7 @@ export class Navbar {
         takeUntilDestroyed(),
       )
       .subscribe(() => {
+        this.scopedPage.set(this.currentScopedPage());
         const input = this.searchInput()?.nativeElement;
         if (input && document.activeElement !== input) {
           input.value = this.urlSearch();
@@ -80,6 +77,11 @@ export class Navbar {
   logout(): void {
     this.authService.logout();
     this.router.navigate(['/auth/login']);
+  }
+
+  private currentScopedPage(): string | null {
+    const path = this.router.url.split('?')[0];
+    return SCOPED_SEARCH_PAGES.includes(path) ? path : null;
   }
 
   private urlSearch(): string {

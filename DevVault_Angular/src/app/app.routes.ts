@@ -42,18 +42,40 @@ export const routes: Routes = [
       },
       {
         path: 'notes',
-        loadComponent: () => import('./shared/components/coming-soon/coming-soon').then((m) => m.ComingSoon),
-        data: { title: 'Notes', icon: 'description' },
+        loadComponent: () => import('./features/notes/notes').then((m) => m.Notes),
+        data: { title: 'Notes' },
+      },
+      {
+        path: 'notes/:id',
+        loadComponent: () => import('./features/notes/note-detail/note-detail').then((m) => m.NoteDetail),
+        data: { title: 'Note' },
       },
       {
         path: 'snippets',
-        loadComponent: () => import('./shared/components/coming-soon/coming-soon').then((m) => m.ComingSoon),
-        data: { title: 'Snippets', icon: 'code' },
+        loadComponent: () => import('./features/snippets/snippets').then((m) => m.Snippets),
+        data: { title: 'Snippets' },
+      },
+      {
+        path: 'snippets/:id',
+        loadComponent: () =>
+          import('./features/snippets/snippet-detail/snippet-detail').then((m) => m.SnippetDetail),
+        data: { title: 'Snippet' },
+      },
+      {
+        path: 'profile',
+        loadComponent: () => import('./features/profile/profile').then((m) => m.Profile),
+        data: { title: 'Profile' },
       },
       {
         path: 'settings',
-        loadComponent: () => import('./shared/components/coming-soon/coming-soon').then((m) => m.ComingSoon),
-        data: { title: 'Settings', icon: 'settings' },
+        loadComponent: () => import('./features/settings/settings').then((m) => m.Settings),
+        data: { title: 'Settings' },
+      },
+      {
+        path: 'settings/password',
+        loadComponent: () =>
+          import('./features/settings/change-password/change-password').then((m) => m.ChangePassword),
+        data: { title: 'Change Password' },
       },
     ],
   },

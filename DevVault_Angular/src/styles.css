@@ -28,7 +28,10 @@ app-coming-soon,
 app-confirm-dialog,
 app-empty-state,
 app-card-skeleton,
-app-color-picker {
+app-color-picker,
+app-profile,
+app-settings,
+app-change-password {
   display: block;
 }
 

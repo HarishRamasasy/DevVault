@@ -1,0 +1,83 @@
+<div
+  class="group flex h-full flex-col rounded-2xl border border-gray-200 bg-white p-5 shadow-sm shadow-gray-100 transition hover:shadow-md"
+>
+  <div class="flex items-start justify-between gap-2">
+    <a
+      [routerLink]="['/notes', note._id]"
+      class="line-clamp-2 min-w-0 text-base font-semibold text-gray-900 hover:text-blue-600"
+    >
+      {{ note.title }}
+    </a>
+
+    <div class="flex shrink-0 items-center gap-0.5">
+      <button
+        type="button"
+        (click)="toggleFavorite.emit(note)"
+        [disabled]="favoritePending"
+        [attr.aria-label]="note.favorite ? 'Remove from favorites' : 'Add to favorites'"
+        class="flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 transition hover:bg-gray-100 disabled:opacity-50"
+        [class.text-amber-500]="note.favorite"
+      >
+        <mat-icon class="!text-[19px]">{{ note.favorite ? 'star' : 'star_border' }}</mat-icon>
+      </button>
+
+      <button
+        type="button"
+        [matMenuTriggerFor]="cardMenu"
+        aria-label="More actions"
+        class="flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 transition hover:bg-gray-100"
+      >
+        <mat-icon class="!text-[19px]">more_vert</mat-icon>
+      </button>
+      <mat-menu #cardMenu="matMenu">
+        <a mat-menu-item [routerLink]="['/notes', note._id]">
+          <mat-icon>visibility</mat-icon>
+          <span>Open</span>
+        </a>
+        <button mat-menu-item (click)="edit.emit(note)">
+          <mat-icon>edit</mat-icon>
+          <span>Edit</span>
+        </button>
+        <button mat-menu-item (click)="remove.emit(note)">
+          <mat-icon>delete</mat-icon>
+          <span>Delete</span>
+        </button>
+      </mat-menu>
+    </div>
+  </div>
+
+  <p class="mt-1.5 line-clamp-3 whitespace-pre-line break-words text-sm text-gray-500">{{ note.content }}</p>
+
+  @if (note.folder) {
+    <span class="mt-2 inline-flex w-fit items-center gap-1.5 rounded-md bg-gray-50 px-2 py-1 text-xs font-medium text-gray-600">
+      <span class="h-1.5 w-1.5 shrink-0 rounded-full" [style.background]="note.folder.color"></span>
+      {{ note.folder.name }}
+    </span>
+  }
+
+  @if (note.tags.length) {
+    <div class="mt-3 flex flex-wrap gap-1.5">
+      @for (tag of note.tags; track tag._id) {
+        <span class="inline-flex items-center gap-1 rounded-md bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-600">
+          <span class="h-1.5 w-1.5 shrink-0 rounded-full" [style.background]="tag.color"></span>
+          {{ tag.name }}
+        </span>
+      }
+    </div>
+  }
+
+  <div class="mt-auto flex items-center justify-between gap-2 pt-4">
+    <span class="flex items-center gap-1 text-xs text-gray-400">
+      <mat-icon class="!text-[14px]">update</mat-icon>
+      Updated {{ note.updatedAt | date: 'MMM d, y' }}
+    </span>
+
+    <a
+      [routerLink]="['/notes', note._id]"
+      class="flex items-center gap-1 text-sm font-medium text-blue-600 hover:text-blue-700"
+    >
+      Open
+      <mat-icon class="!text-[16px]">arrow_forward</mat-icon>
+    </a>
+  </div>
+</div>

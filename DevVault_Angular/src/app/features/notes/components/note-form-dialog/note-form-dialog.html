@@ -1,0 +1,52 @@
+<h2 mat-dialog-title class="!m-0 text-lg font-semibold text-gray-900">
+  {{ isEditMode ? 'Edit Note' : 'New Note' }}
+</h2>
+
+<form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+  <mat-dialog-content class="!mt-2 w-full sm:w-[560px]">
+    <fieldset class="space-y-4 pt-1" [disabled]="saving()">
+      <div>
+        <label for="title" class="block text-sm font-medium text-gray-700">Title</label>
+        <input
+          id="title"
+          type="text"
+          formControlName="title"
+          placeholder="e.g. RxJS switchMap vs mergeMap"
+          class="mt-1.5 form-input"
+        />
+        @if (form.controls.title.hasError('required') && form.controls.title.touched) {
+          <p class="mt-1 text-xs text-red-600">Title is required</p>
+        }
+        @if (form.controls.title.hasError('maxlength') && form.controls.title.touched) {
+          <p class="mt-1 text-xs text-red-600">Title cannot exceed 150 characters</p>
+        }
+      </div>
+
+      <div>
+        <label for="content" class="block text-sm font-medium text-gray-700">Content</label>
+        <textarea
+          id="content"
+          formControlName="content"
+          rows="12"
+          placeholder="Write your note..."
+          class="mt-1.5 form-input resize-y font-mono"
+        ></textarea>
+        @if (form.controls.content.hasError('required') && form.controls.content.touched) {
+          <p class="mt-1 text-xs text-red-600">Content is required</p>
+        }
+        @if (form.controls.content.hasError('maxlength')) {
+          <p class="mt-1 text-xs text-red-600">Content cannot exceed {{ contentMax }} characters</p>
+        }
+      </div>
+
+      <app-folder-tag-picker [(folder)]="selectedFolder" [(selectedTags)]="selectedTags" />
+    </fieldset>
+  </mat-dialog-content>
+
+  <mat-dialog-actions class="mr-4 flex justify-end gap-2">
+    <button type="button" (click)="cancel()" [disabled]="saving()" class="btn-secondary">Cancel</button>
+    <button type="submit" [disabled]="saving()" class="btn-primary">
+      {{ saving() ? 'Saving...' : isEditMode ? 'Save Changes' : 'Create Note' }}
+    </button>
+  </mat-dialog-actions>
+</form>

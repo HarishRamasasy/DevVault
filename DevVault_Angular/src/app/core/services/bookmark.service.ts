@@ -1,10 +1,11 @@
 import { inject, Injectable } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 import { ApiSuccessResponse } from '../models/api-response.model';
 import { Bookmark, BookmarkPage, BookmarkPayload, BookmarkQueryParams } from '../models/bookmark.model';
+import { toHttpParams } from '../utils/http-params';
 
 @Injectable({ providedIn: 'root' })
 export class BookmarkService {
@@ -12,16 +13,8 @@ export class BookmarkService {
   private readonly apiUrl = `${environment.apiUrl}/bookmarks`;
 
   list(params: BookmarkQueryParams = {}): Observable<BookmarkPage> {
-    let httpParams = new HttpParams();
-    for (const [key, value] of Object.entries(params)) {
-      const serialized = Array.isArray(value) ? value.join(',') : value;
-      if (serialized !== undefined && serialized !== null && serialized !== '') {
-        httpParams = httpParams.set(key, String(serialized));
-      }
-    }
-
     return this.http
-      .get<ApiSuccessResponse<BookmarkPage>>(this.apiUrl, { params: httpParams })
+      .get<ApiSuccessResponse<BookmarkPage>>(this.apiUrl, { params: toHttpParams(params) })
       .pipe(map((res) => res.data));
   }
 

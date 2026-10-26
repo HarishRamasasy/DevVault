@@ -12,3 +12,5 @@ export const stripEmptyStrings = (payload, fields) => {
   }
   return result;
 };
+
+export const escapeRegex = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');

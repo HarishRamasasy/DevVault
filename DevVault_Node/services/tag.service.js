@@ -1,6 +1,8 @@
 import mongoose from 'mongoose';
 import Tag from '../models/Tag.js';
 import Bookmark from '../models/Bookmark.js';
+import Note from '../models/Note.js';
+import Snippet from '../models/Snippet.js';
 import { findOwnedDocument } from '../utils/ownership.js';
 import { assertUniqueName } from '../utils/uniqueName.js';
 import { stripEmptyStrings } from '../utils/sanitize.js';
@@ -60,5 +62,7 @@ export const deleteTag = async (id, userId) => {
   const tag = await findOwnedTag(id, userId);
 
   await Bookmark.updateMany({ tags: tag._id, user: userId }, { $pull: { tags: tag._id } });
+  await Note.updateMany({ tags: tag._id, user: userId }, { $pull: { tags: tag._id } });
+  await Snippet.updateMany({ tags: tag._id, user: userId }, { $pull: { tags: tag._id } });
   await tag.deleteOne();
 };

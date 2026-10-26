@@ -1,39 +1,18 @@
 import Bookmark, { BOOKMARK_SORTS, BOOKMARK_COLLATION } from '../models/Bookmark.js';
-import Folder from '../models/Folder.js';
 import Tag from '../models/Tag.js';
-import { ApiError } from '../utils/ApiError.js';
-import { findOwnedDocument } from '../utils/ownership.js';
-
-const FOLDER_POPULATE = { path: 'folder', select: 'name color icon' };
-const TAG_POPULATE = { path: 'tags', select: 'name color' };
-
-const dedupeIds = (ids = []) => [...new Set(ids.map((id) => id.toString()))];
-
-// A cleared <select>/autocomplete submits folder: '' to mean "no folder" —
-// normalize that to null so it means the same thing here as an omitted field,
-// instead of reaching Mongoose as an invalid ObjectId cast.
-const normalizeFolderId = (folderId) => (folderId === '' ? null : folderId);
+import { escapeRegex } from '../utils/sanitize.js';
+import {
+  findOwnedDocument,
+  FOLDER_POPULATE,
+  TAG_POPULATE,
+  dedupeIds,
+  normalizeFolderId,
+  assertOwnedFolder,
+  assertOwnedTags,
+} from '../utils/ownership.js';
 
 const findOwnedBookmark = (id, userId) =>
   findOwnedDocument(Bookmark, id, userId, 'Bookmark', [FOLDER_POPULATE, TAG_POPULATE]);
-
-const assertOwnedFolder = async (folderId, userId) => {
-  if (!folderId) return;
-
-  const folder = await Folder.findById(folderId);
-  if (!folder || folder.user.toString() !== userId.toString()) {
-    throw new ApiError(404, 'Folder not found');
-  }
-};
-
-const assertOwnedTags = async (tagIds, userId) => {
-  if (!tagIds || !tagIds.length) return;
-
-  const tags = await Tag.find({ _id: { $in: tagIds }, user: userId });
-  if (tags.length !== tagIds.length) {
-    throw new ApiError(404, 'One or more tags were not found');
-  }
-};
 
 export const createBookmark = async (userId, payload) => {
   const folder = normalizeFolderId(payload.folder);
@@ -53,8 +32,6 @@ export const createBookmark = async (userId, payload) => {
 
   return bookmark.toJSON();
 };
-
-const escapeRegex = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
 export const listBookmarks = async (userId, filters) => {
   const { search, favorite, archived, type, folder, tags, sort = 'newest', page = 1, limit = 12 } = filters;

@@ -1,6 +1,8 @@
 import mongoose from 'mongoose';
 import Folder from '../models/Folder.js';
 import Bookmark from '../models/Bookmark.js';
+import Note from '../models/Note.js';
+import Snippet from '../models/Snippet.js';
 import { findOwnedDocument } from '../utils/ownership.js';
 import { assertUniqueName } from '../utils/uniqueName.js';
 import { stripEmptyStrings } from '../utils/sanitize.js';
@@ -59,5 +61,7 @@ export const deleteFolder = async (id, userId) => {
   const folder = await findOwnedFolder(id, userId);
 
   await Bookmark.updateMany({ folder: folder._id, user: userId }, { $set: { folder: null } });
+  await Note.updateMany({ folder: folder._id, user: userId }, { $set: { folder: null } });
+  await Snippet.updateMany({ folder: folder._id, user: userId }, { $set: { folder: null } });
   await folder.deleteOne();
 };

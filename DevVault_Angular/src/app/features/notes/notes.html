@@ -1,0 +1,208 @@
+<div class="space-y-6">
+  <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-900">Notes</h1>
+      <p class="mt-1 text-sm text-gray-500">Keep your technical notes, explanations and fixes in one place.</p>
+    </div>
+    <button
+      type="button"
+      (click)="openFormDialog()"
+      class="flex items-center justify-center gap-1.5 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700"
+    >
+      <mat-icon class="!text-[18px]">add</mat-icon>
+      New Note
+    </button>
+  </div>
+
+  <div class="space-y-3">
+    <button
+      type="button"
+      (click)="filtersOpen.set(!filtersOpen())"
+      [attr.aria-expanded]="filtersOpen()"
+      aria-controls="note-filters"
+      class="filter-btn w-full justify-center sm:hidden"
+      [class.filter-btn-active]="hasFilters()"
+    >
+      <mat-icon class="!text-[18px]">tune</mat-icon>
+      Filters
+    </button>
+
+    <div
+      id="note-filters"
+      class="flex-wrap items-center gap-2 sm:flex"
+      [class.hidden]="!filtersOpen()"
+      [class.flex]="filtersOpen()"
+    >
+      <button
+        type="button"
+        [matMenuTriggerFor]="favoriteMenu"
+        class="filter-btn"
+        [class.filter-btn-active]="query().favorite !== undefined"
+      >
+        <mat-icon class="!text-[18px]">{{ query().favorite === undefined ? 'star_border' : 'star' }}</mat-icon>
+        {{ query().favorite === undefined ? 'All' : query().favorite ? 'Favorites' : 'Not favorites' }}
+      </button>
+      <mat-menu #favoriteMenu="matMenu">
+        <button mat-menu-item (click)="setFavorite(null)">All</button>
+        <button mat-menu-item (click)="setFavorite(true)">Favorites</button>
+        <button mat-menu-item (click)="setFavorite(false)">Not favorites</button>
+      </mat-menu>
+
+      <button type="button" [matMenuTriggerFor]="folderMenu" class="filter-btn" [class.filter-btn-active]="query().folder">
+        @if (selectedFolder(); as folder) {
+          <span class="h-2 w-2 shrink-0 rounded-full" [style.background]="folder.color"></span>
+          {{ folder.name }}
+        } @else {
+          <mat-icon class="!text-[18px]">folder</mat-icon>
+          {{ query().folder ? 'Folder' : 'All folders' }}
+        }
+      </button>
+      <mat-menu #folderMenu="matMenu">
+        <button mat-menu-item (click)="setFolder(null)">All folders</button>
+        @for (folder of folders(); track folder._id) {
+          <button mat-menu-item (click)="setFolder(folder._id)">
+            <span class="flex items-center gap-2">
+              <span class="h-2 w-2 shrink-0 rounded-full" [style.background]="folder.color"></span>
+              {{ folder.name }}
+            </span>
+          </button>
+        }
+        @if (!folders().length) {
+          <button mat-menu-item disabled>No folders yet</button>
+        }
+      </mat-menu>
+
+      <button
+        type="button"
+        [matMenuTriggerFor]="tagMenu"
+        class="filter-btn"
+        [class.filter-btn-active]="selectedTagIds().size"
+      >
+        <mat-icon class="!text-[18px]">label</mat-icon>
+        {{ selectedTagIds().size ? 'Tags (' + selectedTagIds().size + ')' : 'All tags' }}
+      </button>
+      <mat-menu #tagMenu="matMenu">
+        <p class="px-4 pb-1 pt-2 text-xs text-gray-400">Shows notes with all selected tags</p>
+        @for (tag of tags(); track tag._id) {
+          <button mat-menu-item (click)="$event.stopPropagation(); toggleTag(tag._id)">
+            <span class="flex items-center gap-2">
+              <mat-icon class="!mr-0 !text-[18px]">
+                {{ selectedTagIds().has(tag._id) ? 'check_box' : 'check_box_outline_blank' }}
+              </mat-icon>
+              <span class="h-2 w-2 shrink-0 rounded-full" [style.background]="tag.color"></span>
+              {{ tag.name }}
+            </span>
+          </button>
+        }
+        @if (!tags().length) {
+          <button mat-menu-item disabled>No tags yet</button>
+        }
+        @if (selectedTagIds().size) {
+          <button mat-menu-item (click)="clearTags()">Clear tags</button>
+        }
+      </mat-menu>
+
+      <button type="button" [matMenuTriggerFor]="sortMenu" class="filter-btn">
+        <mat-icon class="!text-[18px]">sort</mat-icon>
+        {{ sortLabel() }}
+      </button>
+      <mat-menu #sortMenu="matMenu">
+        @for (option of sortOptions; track option.value) {
+          <button mat-menu-item (click)="setSort(option.value)">{{ option.label }}</button>
+        }
+      </mat-menu>
+
+      @if (canClear()) {
+        <button type="button" (click)="clearFilters()" class="btn-secondary flex items-center gap-1">
+          <mat-icon class="!text-[18px]">filter_alt_off</mat-icon>
+          Clear Filters
+        </button>
+      }
+    </div>
+  </div>
+
+  @if (pagination(); as page) {
+    @if (page.total) {
+      <p class="text-sm text-gray-500" aria-live="polite">
+        <span class="font-medium text-gray-900">{{ page.total }} {{ page.total === 1 ? 'note' : 'notes' }} found</span>
+        @if (query().search) {
+          · Results for: <span class="font-medium text-gray-900">{{ query().search }}</span>
+        }
+      </p>
+    }
+  }
+
+  @if (error()) {
+    <div class="flex items-center justify-between gap-3 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700" role="alert">
+      {{ error() }}
+      <button type="button" (click)="reload()" class="font-semibold hover:underline">Retry</button>
+    </div>
+  }
+
+  @if (loading() && !notes().length) {
+    <app-card-skeleton variant="bookmark" itemLabel="notes" [count]="6" />
+  } @else if (notes().length) {
+    <div
+      class="grid grid-cols-1 gap-4 transition-opacity sm:grid-cols-2 lg:grid-cols-3"
+      [class.opacity-60]="loading()"
+      [attr.aria-busy]="loading()"
+    >
+      @for (note of notes(); track note._id) {
+        <app-note-card
+          [note]="note"
+          [favoritePending]="pendingFavoriteId() === note._id"
+          (edit)="openFormDialog($event)"
+          (remove)="confirmDelete($event)"
+          (toggleFavorite)="toggleFavorite($event)"
+        />
+      }
+    </div>
+
+    @if (pagination(); as page) {
+      @if (page.totalPages > 1) {
+        <nav class="flex items-center justify-center gap-3" aria-label="Pagination">
+          <button type="button" class="filter-btn" [disabled]="page.page <= 1 || loading()" (click)="goToPage(page.page - 1)">
+            <mat-icon class="!text-[18px]">chevron_left</mat-icon>
+            Previous
+          </button>
+          <span class="text-sm text-gray-500">Page {{ page.page }} of {{ page.totalPages }}</span>
+          <button
+            type="button"
+            class="filter-btn"
+            [disabled]="page.page >= page.totalPages || loading()"
+            (click)="goToPage(page.page + 1)"
+          >
+            Next
+            <mat-icon class="!text-[18px]">chevron_right</mat-icon>
+          </button>
+        </nav>
+      }
+    }
+  } @else if (error()) {
+    <!-- The error banner above already explains why nothing is shown. -->
+  } @else if (query().search) {
+    <app-empty-state
+      icon="search_off"
+      title="No notes found."
+      [message]="'Nothing matches “' + query().search + '”. Try a different search term.'"
+      actionLabel="Clear Filters"
+      (action)="clearFilters()"
+    />
+  } @else if (hasFilters()) {
+    <app-empty-state
+      icon="filter_alt_off"
+      title="No notes match your filters."
+      message="Try removing a filter to see more notes."
+      actionLabel="Clear Filters"
+      (action)="clearFilters()"
+    />
+  } @else {
+    <app-empty-state
+      icon="description"
+      title="No notes yet."
+      message="Write your first note to start building your knowledge base."
+      actionLabel="New Note"
+      (action)="openFormDialog()"
+    />
+  }
+</div>
