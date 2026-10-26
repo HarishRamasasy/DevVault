@@ -10,6 +10,7 @@ const root = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
 const require = createRequire(path.join(root, 'package.json'));
 const mongoose = require('mongoose');
 await import(pathToFileURL(path.join(root, 'config/env.js')));
+if (process.env.TEST_MONGO_URI) process.env.MONGO_URI = process.env.TEST_MONGO_URI; // keep tests off real data
 await import(pathToFileURL(path.join(root, 'config/db.js'))); // applies the project's Windows DNS fix
 await mongoose.connect(process.env.MONGO_URI);
 

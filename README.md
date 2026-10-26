@@ -1,6 +1,6 @@
 # DevVault
 
-![Status](https://img.shields.io/badge/status-Sprint%207%20Complete-brightgreen)
+![Status](https://img.shields.io/badge/status-Sprint%2010%20Hardening-brightgreen)
 ![License](https://img.shields.io/badge/license-MIT-blue)
 ![Angular](https://img.shields.io/badge/Angular-22-dd0031)
 ![Node.js](https://img.shields.io/badge/Node.js-%3E%3D18-339933)
@@ -14,7 +14,7 @@ DevVault gives developers a single, secure place to save and structure the tools
 
 ## Current Status
 
-DevVault has completed **Sprint 9**.
+DevVault has completed **Sprint 9** and is in **Sprint 10** (production hardening, see [SPRINT10_CHANGES.md](DevVault_Angular/SPRINT10_CHANGES.md)). Deployment steps are in [DEPLOYMENT.md](DEPLOYMENT.md); the app has not been deployed yet.
 
 **Completed**
 
@@ -191,7 +191,10 @@ PORT=5000
 MONGO_URI=your_mongodb_connection_string
 JWT_SECRET=your_jwt_secret
 CLIENT_URL=http://localhost:4200
+NODE_ENV=development
 ```
+
+`DevVault_Node/environment.env.example` has the same keys. `MONGO_URI`, `JWT_SECRET` and `CLIENT_URL` are required: the server exits at startup naming any that are missing. In production (`NODE_ENV=production`) `JWT_SECRET` must be at least 32 characters.
 
 > ⚠️ Never commit this file or real secrets to version control. `environment.env` is already excluded via `.gitignore`.
 
@@ -237,6 +240,7 @@ Unauthenticated users are redirected away from protected routes to the login pag
 |---|---|---|---|
 | `POST` | `/api/auth/register` | Register a new user | No |
 | `POST` | `/api/auth/login` | Authenticate a user and receive a JWT | No |
+| `GET` | `/api/health` | Service and database status (`200` ok, `503` database down) | No |
 | `GET` | `/api/auth/me` | Get the currently authenticated user | Yes |
 | `GET` | `/api/users/me` | Get the current user's profile | Yes |
 | `PUT` | `/api/users/me` | Update the current user's `name` and/or `email` (other fields are ignored) | Yes |
@@ -293,6 +297,29 @@ All responses follow a consistent structure:
   "errors": []
 }
 ```
+
+---
+
+## Testing
+
+```bash
+# Backend: no database needed (env validation, headers, CORS, body limit, rate limit, health)
+cd DevVault_Node && npm run test:hardening
+
+# Backend API checks: need a database. They create and delete throwaway @example.test users.
+# Point them at a disposable database instead of real data:
+#   TEST_MONGO_URI=<test cluster uri>   (falls back to MONGO_URI when unset)
+npm run test:users && npm run test:notes && npm run test:snippets
+
+# Frontend unit tests
+cd DevVault_Angular && npx ng test --watch=false
+```
+
+---
+
+## Deployment
+
+See [DEPLOYMENT.md](DEPLOYMENT.md): MongoDB Atlas, the Node API, the Angular static build, CORS, SPA fallback and a smoke-test checklist.
 
 ---
 
